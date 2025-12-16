@@ -54,23 +54,14 @@
 \date{\today}
 
 \begin{document}
-\maketitle
 
-\begin{abstract}
-This document describes the LiquidCan protocol, a CAN-based communication protocol
-for distributed embedded systems. The protocol defines message types, data structures,
-and communication patterns for node information exchange, status reporting, parameter
-management, and field group updates.
-\end{abstract}
-
-\clearpage
 
 % Header/Cover Page
 \thispagestyle{empty}
 \begin{center}
 \vspace*{2cm}
 
-{\Huge \textbf{LiquidCan Protocol}}
+{\Huge \textbf{LiquidCan Protocol Documentation}}
 
 \vspace{1cm}
 
@@ -83,7 +74,7 @@ management, and field group updates.
     \centering
     \includegraphics[scale=0.35]{images/SpaceTeamLogo.png}
 \end{figure}
-\vspace{2cm}
+\vspace{7cm}
 
 {\large TU Wien Space Team}
 
@@ -136,13 +127,13 @@ Building on the CAN FD Standard, it defines the way our client devices (such as 
 It is designed to be as simple and extensible as possible. Care has been taken to minimize the amount of common type definitions between the server and the nodes.
 
 The goal of this document is not to explain the system architecture but to describe how a multi-node system can interact through a CAN bus with a central server.
-\section{Notation and Conventions}
+\section{Notation and Conventions}\label{sec:notation}
 \begin{itemize}
     \item This protocol uses the CAN-FD extension
     \item All fields are little endian.
     \item Payload length: 64 Byte CAN FD.
 \end{itemize}
-\subsection{Common Terms}
+\subsection{Common Terms}\label{subsec:common-terms}
 \begin{center}
 \begin{tabular}{l l}
 \toprule
@@ -157,9 +148,9 @@ ECU & A commonly used embedded CAN device at the TU Wien Space Team
 \end{tabular}
 \end{center}
 
-\section{CAN Identifier Scheme}
-The CAN ID is composed of 11 bits with the following structure.
+\section{CAN Identifier Scheme \& NodeID}\label{sec:can-id-scheme}
 Each device on the bus has its own unique Node ID. The Server is assigned the node ID 0.
+The CAN ID is composed of 11 bits. It contains the sender and receiver Node IDs and a priority bit.
 
 \paragraph{}
 Note the location of the priority bit. It is set as the last bit here since 
@@ -183,12 +174,12 @@ Priority & 1 & Message priority (0=low, 1=high) \\
 
 % TODO: Describe ID allocation strategy and priority rules
 
-\section{Common Frame Layout}
+\section{Common Frame Layout}\label{sec:frame-layout}
 \paragraph{}
 The CAN data field consists of 64 bytes.
 The first byte of each message contains the Message Type. 
 This simple format allows the protocol to be extended in the future by adding more Message Types.
-See \nameref{messageTypes} for a detailed description of message types and their numeric values.
+See Section \ref{sec:message-types} for a detailed description of message types and their numeric values.
 
 \begin{center}
 \begin{tabular}{l c l}
@@ -202,13 +193,13 @@ data & 63 & Payload data \\
 \end{center}
 
 
-\section{Node Registration}
-As soon as a node comes online (or when it receives a nodeInfoReq), it sends out a nodeInfoRes.
+\section{Node Registration}\label{sec:node-registration}
+As soon as a node comes online (or when it receives a \texttt{node\_info\_req}, see \ref{msg:node-info-req}), it sends out a \texttt{node\_info\_res} (see \ref{msg:node-info-res}).
 This announces the node to the bus and includes its name, number of variables and parameters, and its firmware version through
-the firmware and LiquidCan hashes. The central server registers the new node and waits for field registration messages. From this point on the 
-node is allowed to send/receive messages on the bus.
+the firmware and LiquidCan hashes (see \ref{struct:NodeInfoRes}). The central server registers the new node and waits for \texttt{field\_registration} messages. From this point on the 
+node is able to send/receive messages on the bus.
 
-\section{Field Registration \& Management}
+\section{Field Registration \& Management}\label{sec:field-registration}
 Fields are the heart of the protocol. The term Field serves as a general term for both variables and parameters. 
 Variables are periodically sent to the server and non-modifiable. They are meant to represent sensor data or other 
 information which should be periodically logged.
@@ -270,53 +261,52 @@ Parameters can be externally modified and locked. These are meant for configurat
 \caption{Field Registration and Update Flow}
 \end{figure}
 
-\subsection{Registration}
+\subsection{Registration}\label{subsec:registration}
 Variables and parameters are dynamically defined over the bus.
 \paragraph{}
-After initializing registration, a node sends out field registration messages, one for each 
+After initializing registration, a node sends out \texttt{field\_registration} messages, one for each 
 parameter/variable. The FieldRegistration includes a per-node-unique field ID (parameters and variables can have the same ID on the same node), the datatype of the field, and 
 a human-readable name. From this point on, the server knows which types of fields the node has.
 
 \paragraph{}
-Next, the node sends FieldGroupDefinitions. Variables and parameters cannot be mixed together in one FieldGroupDefinition.
-The FieldGroupDefinitions define the byte order of future FieldGroupUpdates. The node sends a group ID to identify the group and a list of field IDs. The order of the 
-field IDs must be the same as the order of fields in future FieldGroupUpdates. The node must ensure that all of the fields defined can fit into a FieldGroupUpdate.
+Next, the node sends \texttt{field\_group\_definition} messages. Variables and parameters cannot be mixed together in one FieldGroupDefinition.
+. The node sends a group ID to identify the group and a list of field IDs. The order of the 
+field IDs must be the same as the order of fields in future \texttt{field\_group\_updates}. The node must ensure that all of the fields defined can fit into a FieldGroupUpdate.
 
 
-\subsection{Regular Operation}
-\subsubsection{Field Updates}
-During regular operation, each node sends FieldGroupUpdates at a defined interval. 
+\subsection{Regular Operation}\label{subsec:regular-operation}
+\subsubsection{Field Updates}\label{subsubsec:field-updates}
+During regular operation, each node sends \texttt{field\_group\_update} messages at a defined interval. 
 The interval can vary between groups, allowing nodes to send fields at different intervals to, for example, reduce bus utilization.
 
-\subsubsection{Parameter Setting}
-Other bus members can send a parameter set request, which includes the field ID of the parameter and the new value.
-Once the node receives the request, it changes the internal parameter value and responds with a parameter set response containing the 
+\subsubsection{Parameter Setting}\label{subsubsec:parameter-setting}
+Other bus members can send a \texttt{parameter\_set\_req} message, which includes the field ID of the parameter and the new value.
+Once the node receives the request, it changes the internal parameter value and responds with a \texttt{parameter\_set\_res} message containing the 
 new value. This should be the actual value read back from the parameter, not simply the value that was received in the request.
 
 
-When a parameter is internally modified through some automated system, the updated value must be sent as a parameter set request to the server.
-\todo{Consider if this could lead to some problems -> Configurable?}
-\subsubsection{Parameter Locking}
+When a parameter is internally modified through some automated system, the updated value must be sent as a \texttt{parameter\_set\_res} message to the server.
+\subsubsection{Parameter Locking}\label{subsubsec:parameter-locking}
 
-A parameter can optionally be locked and later unlocked through a parameter lock request.
+A parameter can optionally be locked and later unlocked through a \texttt{parameter\_set\_lock\_req} message (see \ref{struct:ParameterSetLock} and \ref{msg:parameter-set-lock-req}).
 After a parameter has been locked, it cannot be modified by an external node.
 A parameter can only be unlocked by the locking node or the server. \todo{Is this needed as part of the protocol?}
 \paragraph{}
-\subsubsection{Requesting Field Data}
-A field can be accessed through a field get request, which contains the field ID.
-Nodes respond with a field get response, containing the field ID and the value of the field.
+\subsubsection{Requesting Field Data}\label{subsubsec:requesting-field-data}
+A field can be accessed through a \texttt{field\_get\_req} message, which contains the field ID.
+Nodes respond with a \texttt{field\_get\_res} message, containing the field ID and the value of the field.
 
-\section{Heartbeats}
+\section{Heartbeats}\label{sec:heartbeats}
 Heartbeats ensure that the system does not reach a state where it is still dangerous to physically handle but 
-not accessible through CAN messages. The heartbeat request (sent from the server) contains a continuously increasing counter.
-The value of the counter is unique to each Node. In the case that Nodes do not receive heartbeat requests the node will default
-into a safe state. Similary the server takes note of any unresponsive nodes.
+not accessible through CAN messages. The \texttt{heartbeat\_req} message sent from the server, contains a continuously increasing counter.
+The counter value is unique to each node. If a node does not receive \texttt{heartbeat\_req} messages, it will default
+to a safe state. Similarly, the server takes note of any unresponsive nodes.
 
-\section{Status Messages}
-Node may send optional status messages to the server.
-Currently the 3 status message types are: info, warning, error
-Each message contains a null terminated string with a status message.
-\section{Message Types}\label{messageTypes}
+\section{Status Messages}\label{sec:status-messages}
+Nodes may send optional status messages to the server.
+Currently, the three status message types are: \texttt{info\_status}, \texttt{warning\_status}, and \texttt{error\_status}, as defined in section~\ref{sec:message-types}.
+Each message contains a null-terminated string with a status message.
+\section{Message Types}\label{sec:message-types}
 The following message types are defined in the protocol:
 
 \begin{center}
@@ -326,45 +316,45 @@ The following message types are defined in the protocol:
 \endhead
  
 \multicolumn{4}{l}{\textit{Node Discovery and Information}} \\
-0 & \texttt{node\_info\_req} \label{nodeInfoReq} & No payload & Request node information \\
-1 & \texttt{node\_info\_res}\label{nodeInfoRes} & NodeInfoRes & Response with node capabilities and identification \\
+0 & \texttt{node\_info\_req}\label{msg:node-info-req} & No payload & Request node information \\
+1 & \texttt{node\_info\_res}\label{msg:node-info-res} & NodeInfoRes (\ref{struct:NodeInfoRes}) & Response with node capabilities and identification \\
 \midrule
 \multicolumn{4}{l}{\textit{Status Messages}} \\
-2 & \texttt{info\_status} & Status & Informational status message \\
-3 & \texttt{warning\_status} & Status & Warning status message \\
-4 & \texttt{error\_status} & Status & Error status message \\
+10 & \texttt{info\_status}\label{msg:info-status} & Status (\ref{struct:Status}) & Informational status message \\
+11 & \texttt{warning\_status}\label{msg:warning-status} & Status (\ref{struct:Status}) & Warning status message \\
+12 & \texttt{error\_status}\label{msg:error-status} & Status (\ref{struct:Status}) & Error status message \\
 \midrule
 \multicolumn{4}{l}{\textit{Field Registration}} \\
-5 & \texttt{variable\_registration} & FieldRegistration & Register a variable field \\
-6 & \texttt{parameter\_registration} & FieldRegistration & Register a parameter field \\
+20 & \texttt{variable\_registration}\label{msg:variable-registration} & FieldRegistration (\ref{struct:FieldRegistration}) & Register a variable field \\
+21 & \texttt{parameter\_registration}\label{msg:parameter-registration} & FieldRegistration (\ref{struct:FieldRegistration}) & Register a parameter field \\
 \midrule
 \multicolumn{4}{l}{\textit{Field Group Management}} \\
-7 & \texttt{field\_group\_definition} & FieldGroupDefinition & Define a group of fields for batch updates \\
-8 & \texttt{field\_group\_update} & FieldGroupUpdate & Update values for a field group \\
+30 & \texttt{field\_group\_definition}\label{msg:field-group-definition} & FieldGroupDefinition (\ref{struct:FieldGroupDefinition}) & Define a group of fields for batch updates \\
+31 & \texttt{field\_group\_update}\label{msg:field-group-update} & FieldGroupUpdate (\ref{struct:FieldGroupUpdate}) & Update values for a field group \\
 \midrule
 \multicolumn{4}{l}{\textit{Heartbeat}} \\
-9 & \texttt{heartbeat\_req} & HeartBeat & Heartbeat request \\
-10 & \texttt{heartbeat\_res} & HeartBeat & Heartbeat response \\
+40 & \texttt{heartbeat\_req}\label{msg:heartbeat-req} & HeartBeat (\ref{struct:HeartBeat}) & Heartbeat request \\
+41 & \texttt{heartbeat\_res}\label{msg:heartbeat-res} & HeartBeat (\ref{struct:HeartBeat}) & Heartbeat response \\
 \midrule
 \multicolumn{4}{l}{\textit{Parameter Management}} \\
-11 & \texttt{parameter\_set\_req} & ParameterSetReq & Request to set a parameter value \\
-12 & \texttt{parameter\_set\_res} & ParameterSetRes & Response with confirmed parameter value \\
-13 & \texttt{parameter\_set\_lock\_req} & ParameterSetLock & Request to lock a parameter \\
-14 & \texttt{parameter\_set\_lock\_res} & ParameterSetLock & Response confirming parameter lock \\
+50 & \texttt{parameter\_set\_req}\label{msg:parameter-set-req} & ParameterSetReq (\ref{struct:ParameterSetReq}) & Request to set a parameter value \\
+51 & \texttt{parameter\_set\_res}\label{msg:parameter-set-res} & ParameterSetRes (\ref{struct:ParameterSetRes}) & Response with confirmed parameter value \\
+52 & \texttt{parameter\_set\_lock\_req}\label{msg:parameter-set-lock-req} & ParameterSetLock (\ref{struct:ParameterSetLock}) & Request to lock a parameter \\
+53 & \texttt{parameter\_set\_lock\_res}\label{msg:parameter-set-lock-res} & ParameterSetLock (\ref{struct:ParameterSetLock}) & Response confirming parameter lock \\
 \midrule
 \multicolumn{4}{l}{\textit{Field Access}} \\
-15 & \texttt{field\_get\_req} & FieldGetReq & Request field value \\
-16 & \texttt{field\_get\_res} & FieldGetRes & Response with field value \\
+60 & \texttt{field\_get\_req}\label{msg:field-get-req} & FieldGetReq (\ref{struct:FieldGetReq}) & Request field value \\
+61 & \texttt{field\_get\_res}\label{msg:field-get-res} & FieldGetRes (\ref{struct:FieldGetRes}) & Response with field value \\
+
 \bottomrule
 \end{longtable}
 \end{center}
 
-\section{Data Structures}
+\section{Data Structures}\label{sec:data-structures}
 
-\subsection{NodeInfoRes}
+\subsection{NodeInfoRes}\label{struct:NodeInfoRes}
 Response containing information about a node's capabilities.
 
-\textbf{Total size:} 63 bytes
 
 \begin{figure}[H]
 \centering
@@ -373,13 +363,13 @@ bitwidth=\widthof{liquid\_hash },
 leftcurly=., leftcurlyspace=2pt]{8}
 \begin{leftwordgroup} {0}
  \bitheader[bitformatting=\large]{0-7} \\
-\bitbox{1}{var\_cnt} & \bitbox{1}{par\_cnt} & \bitbox{1}{ func\_cnt} & 
+\bitbox{1}{var\_cnt} & \bitbox{1}{par\_cnt} & 
 \bitbox{4}{firmware\_hash} &
-& &  \bitbox{1}{liquid\_hash  }
+& &  \bitbox{2}{liquid\_hash  }
 \end{leftwordgroup}\\
 
 \begin{leftwordgroup} {1}
-\bitbox{3}{liquid\_hash} \bitbox[lrt]{5}{  }
+\bitbox{2}{liquid\_hash} \bitbox[lrt]{6}{  }
 \end{leftwordgroup}\\
 
 \begin{leftwordgroup} {2}
@@ -418,10 +408,9 @@ Field & Bytes & Description \\
 \midrule
 variable\_count & 1 & Number of variables on this node \\
 parameter\_count & 1 & Number of parameters on this node \\
-function\_count & 1 & Number of functions on this node \\
 firmware\_hash & 4 & Hash of the firmware version \\
 liquidcan\_hash & 4 & Hash of the LiquidCan protocol version \\
-device\_name & 52 & Human-readable device name \\
+device\_name & 53 & Human-readable device name \\
 \midrule
 \textbf{Total} & \textbf{63} & \\
 \bottomrule
@@ -434,14 +423,13 @@ device\_name & 52 & Human-readable device name \\
 typedef struct __attribute__((packed)) {
     uint8_t variable_count;
     uint8_t parameter_count;
-    uint8_t function_count;
     uint32_t firmware_hash;
     uint32_t liquidcan_hash;
-    char device_name[52];
+    char device_name[53];
 } node_info_res_t;
 \end{lstlisting}
 
-\subsection{Status}
+\subsection{Status}\label{struct:Status}
 General status message with text information.
 
 \begin{center}
@@ -462,9 +450,9 @@ typedef struct __attribute__((packed)) {
 } status_t;
 \end{lstlisting}
 
-\subsection{FieldRegistration}
+\subsection{FieldRegistration}\label{struct:FieldRegistration}
 Registration information for a variable or parameter field.
-The DataType here refers to the DataType Enum value.
+The DataType here refers to the DataType Enum value (see \ref{subsec:DataType}).
 
 \begin{center}
 \begin{tabular}{l c l}
@@ -489,7 +477,7 @@ typedef struct __attribute__((packed)) {
 } field_registration_t;
 \end{lstlisting}
 
-\subsection{FieldGroupDefinition}
+\subsection{FieldGroupDefinition}\label{struct:FieldGroupDefinition}
 Defines a group of related fields for efficient batch updates.
 The 
 \begin{center}
@@ -514,7 +502,7 @@ typedef struct __attribute__((packed)) {
 } field_group_definition_t;
 \end{lstlisting}
 
-\subsection{FieldGroupUpdate}
+\subsection{FieldGroupUpdate}\label{struct:FieldGroupUpdate}
 Updates all field values in a previously defined group.
 
 \begin{center}
@@ -530,8 +518,7 @@ values & 62 & Packed values for all fields in the group \\
 \end{tabular}
 \end{center}
 
-\textbf{Note:} The values are packed according to the data types of the fields
-defined in the corresponding FieldGroupDefinition, ordered by the field\_ids array.
+\textbf{Note:} The values are packed in the same order as announced in the FieldGroupDefinition.
 
 % TODO: Describe value packing rules and alignment
 
@@ -542,7 +529,7 @@ typedef struct __attribute__((packed)) {
 } field_group_update_t;
 \end{lstlisting}
 
-\subsection{HeartBeat}
+\subsection{HeartBeat}\label{struct:HeartBeat}
 Simple heartbeat message with counter.
 
 \begin{center}
@@ -563,7 +550,7 @@ typedef struct __attribute__((packed)) {
 } heartbeat_t;
 \end{lstlisting}
 
-\subsection{ParameterSetReq}
+\subsection{ParameterSetReq}\label{struct:ParameterSetReq}
 Request to set a parameter value.
 
 \begin{center}
@@ -586,8 +573,8 @@ typedef struct __attribute__((packed)) {
 } parameter_set_req_t;
 \end{lstlisting}
 
-\subsection{ParameterSetRes}
-Response to a Parameter set request.
+\subsection{ParameterSetRes}\label{struct:ParameterSetRes}
+Response to a parameter set request.
 
 \begin{center}
 \begin{tabular}{l c l}
@@ -610,9 +597,9 @@ typedef struct __attribute__((packed)) {
 } parameter_set_res_t;
 \end{lstlisting}
 
-\subsection{FieldGetReq}
+\subsection{FieldGetReq}\label{struct:FieldGetReq}
 Request to retrieve a field value.
-Parameters are symbolized by field\_type = 0 and variables by field\_type = 1
+Parameters are symbolized by field\_type = 0 and variables by field\_type = 1.
 \begin{center}
 \begin{tabular}{l c l}
 \toprule
@@ -633,7 +620,7 @@ typedef struct __attribute__((packed)) {
 } field_get_req_t;
 \end{lstlisting}
 
-\subsection{FieldGetRes}
+\subsection{FieldGetRes}\label{struct:FieldGetRes}
 Response with requested field value.
 
 \begin{center}
@@ -658,7 +645,7 @@ typedef struct __attribute__((packed)) {
 } field_get_res_t;
 \end{lstlisting}
 
-\subsection{ParameterSetLock}
+\subsection{ParameterSetLock}\label{struct:ParameterSetLock}
 Locks a parameter to prevent changes.
 
 \begin{center}
@@ -680,7 +667,7 @@ typedef struct __attribute__((packed)) {
 \end{lstlisting}
 
 
-\subsection{DataType}
+\subsection{DataType}\label{subsec:DataType}
 The protocol supports the following data types:
 \begin{center}
 \begin{tabular}{l l l}
@@ -699,20 +686,13 @@ Enum Values & Type Name & Description \\
 \end{tabular}
 \end{center}
 
-\section{Versioning and Extension Mechanisms}
+\section{Versioning and Extension Mechanisms}\label{sec:versioning}
 % TODO: Describe:
 % - Version tracking using firmware_hash and liquidcan_hash
 % - Protocol versioning strategy
 % - Backwards compatibility rules
 % - How to handle unknown message types
-This protocol uses semantiv versioning.
-See \href{semver.org}{https://semver.org/} for a detailed description. A minor update version would for example be adding a new datatype or a new message type. Every update of the document must trigger an update of the liquidCAN repo, containing the rust and c code for each implementation. The updated repo must be reflected in the liquid\_hash version number used in the firmware/server.
+This protocol uses semantic versioning.
+See \href{https://semver.org/}{https://semver.org/} for a detailed description. A minor update version would, for example, be adding a new datatype or a new message type . Every update of the document must trigger an update of the liquidCAN repo, containing the Rust and C code for each implementation. The updated repo must be reflected in the \texttt{liquidcan\_hash} field of the \texttt{node\_info\_res} used in the firmware/server.
 
-\section{How to use this documentation}
-\begin{enumerate}
-    \item Implement heartbeat mechanism for node monitoring.
-    \item Fill in the TODO sections with project-specific details.
-    \item Test cross-compiler compatibility of struct layouts.
-    \item Add application-specific message types as needed.
-\end{enumerate}
 \end{document}

@@ -1,0 +1,35 @@
+\contentsline {section}{\numberline {1}Purpose and Scope}{4}{section.1}%
+\contentsline {section}{\numberline {2}Notation and Conventions}{4}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Common Terms}{4}{subsection.2.1}%
+\contentsline {section}{\numberline {3}CAN Identifier Scheme \& NodeID}{4}{section.3}%
+\contentsline {paragraph}{}{4}{section*.4}%
+\contentsline {section}{\numberline {4}Common Frame Layout}{4}{section.4}%
+\contentsline {paragraph}{}{4}{section*.5}%
+\contentsline {section}{\numberline {5}Node Registration}{5}{section.5}%
+\contentsline {section}{\numberline {6}Field Registration \& Management}{5}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Registration}{6}{subsection.6.1}%
+\contentsline {paragraph}{}{6}{section*.7}%
+\contentsline {paragraph}{}{6}{section*.8}%
+\contentsline {subsection}{\numberline {6.2}Regular Operation}{6}{subsection.6.2}%
+\contentsline {subsubsection}{\numberline {6.2.1}Field Updates}{6}{subsubsection.6.2.1}%
+\contentsline {subsubsection}{\numberline {6.2.2}Parameter Setting}{6}{subsubsection.6.2.2}%
+\contentsline {subsubsection}{\numberline {6.2.3}Parameter Locking}{6}{subsubsection.6.2.3}%
+\contentsline {paragraph}{}{6}{section*.9}%
+\contentsline {subsubsection}{\numberline {6.2.4}Requesting Field Data}{6}{subsubsection.6.2.4}%
+\contentsline {section}{\numberline {7}Heartbeats}{6}{section.7}%
+\contentsline {section}{\numberline {8}Status Messages}{7}{section.8}%
+\contentsline {section}{\numberline {9}Message Types}{7}{section.9}%
+\contentsline {section}{\numberline {10}Data Structures}{7}{section.10}%
+\contentsline {subsection}{\numberline {10.1}NodeInfoRes}{7}{subsection.10.1}%
+\contentsline {subsection}{\numberline {10.2}Status}{8}{subsection.10.2}%
+\contentsline {subsection}{\numberline {10.3}FieldRegistration}{9}{subsection.10.3}%
+\contentsline {subsection}{\numberline {10.4}FieldGroupDefinition}{9}{subsection.10.4}%
+\contentsline {subsection}{\numberline {10.5}FieldGroupUpdate}{9}{subsection.10.5}%
+\contentsline {subsection}{\numberline {10.6}HeartBeat}{10}{subsection.10.6}%
+\contentsline {subsection}{\numberline {10.7}ParameterSetReq}{10}{subsection.10.7}%
+\contentsline {subsection}{\numberline {10.8}ParameterSetRes}{10}{subsection.10.8}%
+\contentsline {subsection}{\numberline {10.9}FieldGetReq}{11}{subsection.10.9}%
+\contentsline {subsection}{\numberline {10.10}FieldGetRes}{11}{subsection.10.10}%
+\contentsline {subsection}{\numberline {10.11}ParameterSetLock}{11}{subsection.10.11}%
+\contentsline {subsection}{\numberline {10.12}DataType}{11}{subsection.10.12}%
+\contentsline {section}{\numberline {11}Versioning and Extension Mechanisms}{12}{section.11}%
