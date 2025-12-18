@@ -1,0 +1,383 @@
+\section{Data Structures}\label{sec:data-structures}
+
+\subsection{NodeInfoRes}\label{struct:NodeInfoRes}
+Response containing information about a node's capabilities.
+
+
+\begin{figure}[H]
+\centering
+\begin{bytefield}[
+bitwidth=\widthof{liquid\_hash },
+leftcurly=., leftcurlyspace=2pt]{8}
+\begin{leftwordgroup} {0}
+ \bitheader[bitformatting=\large]{0-7} \\
+\bitbox{1}{var\_cnt} & \bitbox{1}{par\_cnt} & 
+\bitbox{4}{firmware\_hash} &
+& &  \bitbox{2}{liquid\_hash  }
+\end{leftwordgroup}\\
+
+\begin{leftwordgroup} {1}
+\bitbox{2}{liquid\_hash} \bitbox[lrt]{6}{  }
+\end{leftwordgroup}\\
+
+\begin{leftwordgroup} {2}
+\bitbox[lr]{8}{  }
+\end{leftwordgroup}\\
+\begin{leftwordgroup} {3}
+\bitbox[lr]{8}{  }
+\end{leftwordgroup}\\
+\begin{leftwordgroup} {4}
+\bitbox[lr]{8}{ device\_name }
+\end{leftwordgroup}\\
+\begin{leftwordgroup} {5}
+\bitbox[lr]{8}{  }
+\end{leftwordgroup}\\
+\begin{leftwordgroup} {6}
+\bitbox[lr]{8}{  }
+\end{leftwordgroup}\\
+\begin{leftwordgroup} {7}
+\bitbox[lrb]{8}{  }
+\end{leftwordgroup}\\
+
+\end{bytefield}
+
+\vspace{2mm}
+
+
+\caption{NodeInfoRes byte layout (8 bytes per row)}
+\end{figure}
+
+\textbf{Field Descriptions:}
+
+\begin{center}
+\begin{tabular}{l c l}
+\toprule
+Field & Bytes & Description \\
+\midrule
+var\_cnt & 1 & Number of variables on this node \\
+par\_cnt & 1 & Number of parameters on this node \\
+firmware\_hash & 4 & Hash of the firmware version \\
+liquid\_hash & 4 & Hash of the LiquidCan protocol version \\
+device\_name & 53 & Human-readable device name \\
+\midrule
+\textbf{Total} & \textbf{63} & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% TODO: Describe the purpose and usage of NodeInfoRes
+
+\begin{lstlisting}[caption={NodeInfoRes struct}]
+typedef struct __attribute__((packed)) {
+    uint8_t var_count;
+    uint8_t par_count;
+    uint32_t firmware_hash;
+    uint32_t liquidk_hash;
+    char device_name[53];
+} node_info_res_t;
+\end{lstlisting}
+
+\subsection{Status}\label{struct:Status}
+General status message with text information.
+
+\begin{center}
+\begin{tabular}{l c l}
+\toprule
+Field & Bytes & Description \\
+\midrule
+msg & 63 & Status message text \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% TODO: Describe when status messages are used
+
+\begin{lstlisting}[caption={Status struct}]
+typedef struct __attribute__((packed)) {
+    char msg[63];
+} status_t;
+\end{lstlisting}
+
+\subsection{FieldRegistration}\label{struct:FieldRegistration}
+Registration information for a variable or parameter field.
+The DataType here refers to the DataType Enum value (see \ref{subsec:DataType}).
+
+\begin{center}
+\begin{tabular}{l c l}
+\toprule
+Field & Bytes & Description \\
+\midrule
+field\_id & 1 & Unique identifier for this field \\
+field\_type & 1 & Data type (DataType enum) \\
+field\_name & 61 & Human-readable field name \\
+\midrule
+\textbf{Total} & \textbf{63} & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+\begin{lstlisting}[caption={FieldRegistration struct}]
+typedef struct __attribute__((packed)) {
+    uint8_t field_id;
+    uint8_t field_type; 
+    char field_name[61];
+} field_registration_t;
+\end{lstlisting}
+
+\subsection{FieldGroupDefinition}\label{struct:FieldGroupDefinition}
+Defines a group of related fields for efficient batch updates.
+The 
+\begin{center}
+\begin{tabular}{l c l}
+\toprule
+Field & Bytes & Description \\
+\midrule
+group\_id & 1 & Unique identifier for this group \\
+field\_ids & 62 & Array of field IDs in this group \\
+\midrule
+\textbf{Total} & \textbf{63} & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% TODO: Describe field group usage and maximum number of fields per group
+
+\begin{lstlisting}[caption={FieldGroupDefinition struct}]
+typedef struct __attribute__((packed)) {
+    uint8_t group_id;
+    uint8_t field_ids[62];
+} field_group_definition_t;
+\end{lstlisting}
+
+\subsection{FieldGroupUpdate}\label{struct:FieldGroupUpdate}
+Updates all field values in a previously defined group.
+
+\begin{center}
+\begin{tabular}{l c l}
+\toprule
+Field & Bytes & Description \\
+\midrule
+group\_id & 1 & Group identifier \\
+values & 62 & Packed values for all fields in the group \\
+\midrule
+\textbf{Total} & \textbf{63} & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Note:} The values are packed in the same order as announced in the FieldGroupDefinition.
+
+% TODO: Describe value packing rules and alignment
+
+\begin{lstlisting}[caption={FieldGroupUpdate struct}]
+typedef struct __attribute__((packed)) {
+    uint8_t group_id;
+    uint8_t values[62];
+} field_group_update_t;
+\end{lstlisting}
+
+\subsection{HeartBeat}\label{struct:HeartBeat}
+Simple heartbeat message with counter.
+
+\begin{center}
+\begin{tabular}{l c l}
+\toprule
+Field & Bytes & Description \\
+\midrule
+counter & 4 & Incrementing counter value \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% TODO: Describe heartbeat interval and timeout behavior
+
+\begin{lstlisting}[caption={HeartBeat struct}]
+typedef struct __attribute__((packed)) {
+    uint32_t counter;
+} heartbeat_t;
+\end{lstlisting}
+
+\subsection{ParameterSetReq}\label{struct:ParameterSetReq}
+Request to set a parameter value.
+
+\begin{center}
+\begin{tabular}{l c l}
+\toprule
+Field & Bytes & Description \\
+\midrule
+parameter\_id & 1 & Parameter identifier \\
+value & 62 & New value (type depends on parameter) \\
+\midrule
+\textbf{Total} & \textbf{63} & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{lstlisting}[caption={ParameterSetReq struct}]
+typedef struct __attribute__((packed)) {
+    uint8_t parameter_id;
+    uint8_t value[62];
+} parameter_set_req_t;
+\end{lstlisting}
+
+\subsection{ParameterSetRes}\label{struct:ParameterSetRes}
+Response to a parameter set request.
+
+\begin{center}
+\begin{tabular}{l c l}
+\toprule
+Field & Bytes & Description \\
+\midrule
+parameter\_id & 1 & Parameter identifier \\
+value & 62 & Confirmed value after set operation \\
+\midrule
+\textbf{Total} & \textbf{63} & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+\begin{lstlisting}[caption={ParameterSetRes struct}]
+typedef struct __attribute__((packed)) {
+    uint8_t parameter_id;
+    uint8_t value[62];
+} parameter_set_res_t;
+\end{lstlisting}
+
+\subsection{FieldGetReq}\label{struct:FieldGetReq}
+Request to retrieve a field value
+\begin{center}
+\begin{tabular}{l c l}
+\toprule
+Field & Bits/Bytes & Description \\
+\midrule
+field\_id & 1 Byte & Field identifier \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% TODO: Describe field retrieval process
+
+\begin{lstlisting}[caption={FieldGetReq struct}]
+typedef struct __attribute__((packed)) {
+    uint8_t field_id;
+} field_get_req_t;
+\end{lstlisting}
+
+\subsection{FieldGetRes}\label{struct:FieldGetRes}
+Response with requested field value.
+
+\begin{center}
+\begin{tabular}{l c l}
+\toprule
+Field & Bytes & Description \\
+\midrule
+field\_id & 1 & Field identifier \\
+value & 62 & Field value \\
+\midrule
+\textbf{Total} & \textbf{63} & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% TODO: Describe response format
+
+\begin{lstlisting}[caption={FieldGetRes struct}]
+typedef struct __attribute__((packed)) {
+    uint8_t field_id;
+    uint8_t value[62];
+} field_get_res_t;
+\end{lstlisting}
+
+
+\subsection{FieldIDLookupReq}\label{struct:FieldIDLookupReq}
+Requsts the fieldID of a field matching a field name
+
+\begin{center}
+\begin{tabular}{l c l}
+\toprule
+Field & Bytes & Description \\
+\midrule
+field\_name & 61 & Field Name \\
+\midrule
+\textbf{Total} & \textbf{61} & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% TODO: Describe response format
+
+\begin{lstlisting}[caption={FieldIDLookupReq struct}]
+typedef struct __attribute__((packed)) {
+    uint8_t field_name[61];
+} field_id_lookup_req;
+\end{lstlisting}
+
+\subsection{FieldIDLookupRes}\label{struct:FieldIDLookupRes}
+Response with requested field id and a status byte which shows if the node has found the field name.
+\\
+\begin{center}
+\begin{tabular}{l c l}
+\toprule
+Field & Bytes & Description \\
+\midrule
+status & 1 Byte & Status byte (0=not found, 1=found) \\
+field\_id & 1 Byte & Field ID \\
+\midrule
+\textbf{Total} & \textbf{63} & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% TODO: Describe response format
+
+\begin{lstlisting}[caption={FieldIDLookupRes struct}]
+typedef struct __attribute__((packed)) {
+    uint8_t status;
+    uint8_t fieldID;
+} field_id_lookup_res;
+\end{lstlisting}
+
+\subsection{ParameterSetLock}\label{struct:ParameterSetLock}
+Locks a parameter to prevent changes.
+
+\begin{center}
+\begin{tabular}{l c l}
+\toprule
+Field & Bytes & Description \\
+\midrule
+parameter\_id & 1 & Parameter identifier to lock \\
+parameter\_lock & 1 & Lock status(0=unlocked, 1=locked) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% TODO: Describe parameter locking mechanism and use cases
+
+\begin{lstlisting}[caption={ParameterSetLock struct}]
+typedef struct __attribute__((packed)) {
+    uint8_t parameter_id;
+    uint8_t lock_status;
+} parameter_set_lock_t;
+\end{lstlisting}
+
+
+\subsection{DataType}\label{subsec:DataType}
+The protocol supports the following data types:
+\begin{center}
+\begin{tabular}{l l l}
+\toprule
+Enum Values & Type Name & Description \\
+\midrule
+0 & \texttt{Float32} & 32-bit floating point \\
+1 & \texttt{Int32} & 32-bit signed integer \\
+2 & \texttt{Int16} & 16-bit signed integer \\
+3 & \texttt{Int8} & 8-bit signed integer \\
+4 & \texttt{UInt32} & 32-bit unsigned integer \\
+5 & \texttt{UInt16} & 16-bit unsigned integer \\
+6 & \texttt{UInt8} & 8-bit unsigned integer \\
+
+\bottomrule
+\end{tabular}
+\end{center}

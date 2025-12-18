@@ -1,0 +1,45 @@
+\section{Message Types}\label{sec:message-types}
+The following message types are defined in the protocol:
+
+\begin{center}
+\begin{longtable}{c l l p{6cm}}
+\toprule
+\textbf{Enum} & \textbf{Message Type} & \textbf{Data Payload} & \textbf{Description} \\
+\endhead
+ 
+\multicolumn{4}{l}{\textit{Node Discovery and Information}} \\
+0 & \texttt{node\_info\_req}\label{msg:node-info-req} & No payload & Request node information \\
+1 & \texttt{node\_info\_res}\label{msg:node-info-res} & NodeInfoRes (\ref{struct:NodeInfoRes}) & Response with node capabilities and identification \\
+\midrule
+\multicolumn{4}{l}{\textit{Status Messages}} \\
+10 & \texttt{info\_status}\label{msg:info-status} & Status (\ref{struct:Status}) & Informational status message \\
+11 & \texttt{warning\_status}\label{msg:warning-status} & Status (\ref{struct:Status}) & Warning status message \\
+12 & \texttt{error\_status}\label{msg:error-status} & Status (\ref{struct:Status}) & Error status message \\
+\midrule
+\multicolumn{4}{l}{\textit{Field Registration}} \\
+20 & \texttt{variable\_registration}\label{msg:variable-registration} & FieldRegistration (\ref{struct:FieldRegistration}) & Register a variable field \\
+21 & \texttt{parameter\_registration}\label{msg:parameter-registration} & FieldRegistration (\ref{struct:FieldRegistration}) & Register a parameter field \\
+\midrule
+\multicolumn{4}{l}{\textit{Field Group Management}} \\
+30 & \texttt{field\_group\_definition}\label{msg:field-group-definition} & FieldGroupDefinition (\ref{struct:FieldGroupDefinition}) & Define a group of fields for batch updates \\
+31 & \texttt{field\_group\_update}\label{msg:field-group-update} & FieldGroupUpdate (\ref{struct:FieldGroupUpdate}) & Update values for a field group \\
+\midrule
+\multicolumn{4}{l}{\textit{Heartbeat}} \\
+40 & \texttt{heartbeat\_req}\label{msg:heartbeat-req} & HeartBeat (\ref{struct:HeartBeat}) & Heartbeat request \\
+41 & \texttt{heartbeat\_res}\label{msg:heartbeat-res} & HeartBeat (\ref{struct:HeartBeat}) & Heartbeat response \\
+\midrule
+\multicolumn{4}{l}{\textit{Parameter Management}} \\
+50 & \texttt{parameter\_set\_req}\label{msg:parameter-set-req} & ParameterSetReq (\ref{struct:ParameterSetReq}) & Request to set a parameter value \\
+51 & \texttt{parameter\_set\_res}\label{msg:parameter-set-res} & ParameterSetRes (\ref{struct:ParameterSetRes}) & Response with confirmed parameter value \\
+52 & \texttt{parameter\_set\_lock\_req}\label{msg:parameter-set-lock-req} & ParameterSetLock (\ref{struct:ParameterSetLock}) & Request to lock a parameter \\
+53 & \texttt{parameter\_set\_lock\_res}\label{msg:parameter-set-lock-res} & ParameterSetLock (\ref{struct:ParameterSetLock}) & Response confirming parameter lock \\
+\midrule
+\multicolumn{4}{l}{\textit{Field Access}} \\
+60 & \texttt{field\_get\_req}\label{msg:field-get-req} & FieldGetReq (\ref{struct:FieldGetReq}) & Request field value \\
+61 & \texttt{field\_get\_res}\label{msg:field-get-res} & FieldGetRes (\ref{struct:FieldGetRes}) & Response with field value \\
+62 & \texttt{field\_id\_lookup\_req}\label{msg:field-id-lookup-req} & FieldIDLookupReq (\ref{struct:FieldIDLookupReq}) & Requests the fieldID of a field name \\
+63 & \texttt{field\_id\_lookup\_res}\label{msg:field-id-lookup-res} & FieldIDLookupRes (\ref{struct:FieldIDLookupRes}) & Response with field ID \\
+
+\bottomrule
+\end{longtable}
+\end{center}

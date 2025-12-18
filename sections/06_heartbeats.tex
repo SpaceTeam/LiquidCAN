@@ -1,0 +1,5 @@
+\section{Heartbeats}\label{sec:heartbeats}
+Heartbeats ensure that the system does not reach a state where it is still dangerous to physically handle but 
+not accessible through CAN messages. The \texttt{heartbeat\_req} message sent from the server contains a continuously increasing counter.
+The counter value is unique to each node. If a node does not receive \texttt{heartbeat\_req} messages, it will default
+to a safe state. Similarly, the server takes note of any unresponsive nodes.

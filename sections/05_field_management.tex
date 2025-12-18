@@ -1,0 +1,99 @@
+\section{Field Registration \& Management}\label{sec:field-registration}
+Fields are the heart of the protocol. The term Field serves as a general term for both variables and parameters. 
+Variables are periodically sent to the server and non-modifiable. They are meant to represent sensor data or other 
+information which should be periodically logged.
+Parameters can be externally modified and locked. These are meant for configuration variables, modifiable by either the server or other nodes.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=10mm,
+    every node/.style={font=\small},
+    box/.style={rectangle, draw, rounded corners, minimum width=3.8cm, minimum height=8mm, align=center, fill=blue!10},
+    serverbox/.style={rectangle, draw, rounded corners, minimum width=3.8cm, minimum height=8mm, align=center, fill=orange!10},
+    arrow/.style={-{Stealth[]}, thick},
+    dasharrow/.style={-{Stealth[]}, thick, dashed}
+]
+    % Node column
+    \node[box] (start) {Node Powers On};
+    \node[box, below=of start] (sendinfo) {Send\\ Node Infos};
+    \node[box, below=of sendinfo] (sendreg) {Send Field\\Registrations\\(for each field)};
+    \node[box, below=of sendreg] (sendgroup) {Send Field Group\\Definitions};
+    \node[box, below=of sendgroup] (ready) {Node Ready};
+    \node[box, below=14mm of ready] (periodic) {Periodic\\Field Group Updates};
+    
+    % Server column
+    \node[serverbox, right=47mm of sendinfo] (rcvinfo) {Register Node\\Store Metadata};
+    \node[serverbox, right=47mm of sendreg] (rcvreg) {Store Field\\Metadata};
+    \node[serverbox, right=47mm of sendgroup] (rcvgroup) {Store Group\\Definitions};
+    \node[serverbox, right=47mm of periodic] (process) {Process Updates\\Store Values};
+    
+    % Labels
+    \node[above=3mm of start, font=\bfseries] {Client Node};
+    \node[above=3mm of rcvinfo, font=\bfseries] {Server};
+    
+    % Arrows - registration phase
+    \draw[arrow] (start) -- (sendinfo);
+    \draw[arrow] (sendinfo) -- (sendreg);
+    \draw[arrow] (sendreg) -- (sendgroup);
+    \draw[arrow] (sendgroup) -- (ready);
+    \draw[arrow] (ready) -- (periodic);
+    
+    % Message arrows
+    \draw[arrow] (sendinfo.east) -- (rcvinfo.west) node[midway, above, font=\footnotesize] {\texttt{node\_info\_res}};
+    \draw[arrow] (sendreg.east) -- (rcvreg.west) node[midway, above, font=\footnotesize] {\texttt{field\_registration}};
+    \draw[arrow] (sendgroup.east) -- (rcvgroup.west) node[midway, above, font=\footnotesize] {\texttt{field\_group\_definition}};
+    \draw[arrow] (periodic.east) -- (process.west) node[midway, above, font=\footnotesize] {\texttt{field\_group\_update}};
+    
+    % Phases - asymmetric padding (more on left)
+    \node[draw, dashed, fit=(sendinfo) (sendreg) (sendgroup), inner xsep=8mm, inner ysep=8mm, xshift=-4mm] (regphase) {};
+    \node[draw, dashed, fit=(periodic), inner xsep=8mm, inner ysep=6mm, xshift=-4mm,yshift=2mm] (opphase) {};
+    
+    % Phase labels - positioned outside the boxes
+    \node[anchor=north west, font=\small\itshape] at (regphase.north west) {Registration Phase};
+    \node[anchor=north west, font=\small\itshape] at (opphase.north west) {Normal Operation};
+    
+    % Loop arrow for periodic updates
+    \draw[arrow] (periodic.south) -- ++(0,-8mm) -| ($(periodic.west)+(-16mm,0)$) -- (periodic.west);
+    
+\end{tikzpicture}
+\caption{Field Registration and Update Flow}
+\end{figure}
+
+\subsection{Registration}\label{subsec:registration}
+Variables and parameters are dynamically defined over the bus.
+\paragraph{}
+After registration was initialized, a node sends out \texttt{field\_registration} messages, one for each 
+parameter/variable. The FieldRegistration includes a field ID, the datatype of the field, and 
+a human-readable name. The name and field ID have to be unique per node. The first bit of paramter field IDs is 0 and the first bit of variable field IDs is 1. From this point on, the server knows which fields the node has.
+
+\paragraph{}
+Next, the node sends \texttt{field\_group\_definition} messages. Variables and parameters cannot be mixed together in one FieldGroupDefinition.
+The node sends a group ID to identify the group and a list of field IDs. 
+The order of the field IDs must be the same as the order of fields in future \texttt{field\_group\_updates}. The node must ensure that the values all of the fields defined can fit into a FieldGroupUpdate.
+
+
+\subsection{Regular Operation}\label{subsec:regular-operation}
+\subsubsection{Field Updates}\label{subsubsec:field-updates}
+During regular operation, each node sends \texttt{field\_group\_update} messages at a defined interval. The order of values here must match the field id ordering of the corresponding \texttt{field\_group\_definition}.
+The interval can vary between groups, allowing nodes to send fields at different intervals to, for example, reduce bus utilization.
+
+\subsubsection{Parameter Setting}\label{subsubsec:parameter-setting}
+Other bus members can send a \texttt{parameter\_set\_req} message, which includes the field ID of the parameter and the new value.
+Once the node receives the request, it changes the internal parameter value and responds with a \texttt{parameter\_set\_res} message containing the 
+new value. This should be the actual value read back from the parameter, not simply the value that was received in the request.
+
+
+When a parameter is internally modified through some automated system, the updated value must be sent as a \texttt{parameter\_set\_res} message to the server.
+\subsubsection{Parameter Locking}\label{subsubsec:parameter-locking}
+
+A parameter can optionally be locked through a \texttt{parameter\_set\_lock\_req} message .
+After a parameter has been locked, it cannot be modified by an external node.
+A parameter can only be unlocked by the locking node or the server. To lock a parameter, a node sends a \texttt{parameter\_set\_lock\_req} with the fieldID and the locking status (0=unlocked, 1=locked). The recieving node responds with a \texttt{parameter\_set\_lock\_res}, confirming the sent fieldID and the locking status.
+\paragraph{}
+\subsubsection{Requesting Field Data}\label{subsubsec:requesting-field-data}
+A field can be accessed through a \texttt{field\_get\_req} message, which contains the field ID.
+Nodes respond with a \texttt{field\_get\_res} message, containing the field ID and the value of the field.
+
+\subsubsection{Field name Lookup}\label{subsubsec:field-name-lookup}
+The field name lookup covers the case where nodes need to access fields from other nodes. Since they don't recieve the \texttt{field\_registration} messages, they don't know the fieldIDs of the named fields they want to access. \texttt{field\_id\_lookup\_req} messages contain the remote field name. The Node responds with a \texttt{field\_id\_lookup\_res} message, containing a bit which states if the field was found and the fieldID.

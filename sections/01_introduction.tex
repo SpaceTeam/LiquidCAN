@@ -1,0 +1,33 @@
+\section{Purpose and Scope}
+% TODO: Describe the purpose of the LiquidCan protocol
+% Nodes involved:
+% Expected CAN bitrate(s):
+% Error handling policy:
+% Versioning scheme:
+% Interoperability constraints:
+The purpose of the LiquidCan protocol is to serve at the heart of all future Liquids Projects at the TU Wien Space Team.
+Building on the CAN FD Standard, it defines the way our client devices (such as ECUs) communicate with the central server and with each other.
+It is designed to be as simple and extensible as possible. Care has been taken to minimize the amount of common type definitions between the server and the nodes.
+
+\section{Notation and Conventions}\label{sec:notation}
+\begin{itemize}
+    \item This protocol uses the CAN-FD extension
+    \item All fields are little endian.
+    \item Payload length: 64 Byte CAN FD.
+\end{itemize}
+
+\subsection{Common Terms}\label{subsec:common-terms}
+\begin{center}
+\begin{tabular}{l l}
+\toprule
+Term & Description \\
+\midrule
+(CAN) Client & A CAN client is a device which is connected to the bus\\ 
+Node & Every client which is not the server\\ 
+Variable & A variable is a non-externally modifiable value which gets periodically sent to the server\\
+Parameters & Parameters can be externally modified\\
+Field & An encompassing term for variables and parameters\\ 
+ECU & A commonly used embedded CAN device at the TU Wien Space Team
+
+\end{tabular}
+\end{center}

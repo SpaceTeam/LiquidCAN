@@ -1,0 +1,25 @@
+\section{CAN Identifier Scheme \& NodeID}\label{sec:can-id-scheme}
+Each device on the bus has its own unique Node ID. The Server is assigned the Node ID 0.
+The CAN ID is composed of 11 bits. It contains the sender and receiver Node IDs and a priority bit.
+
+\paragraph{}
+Note the location of the priority bit. It is set as the last bit here since 
+this document expects little-endianness. On the actual bus the priority bit will be sent first, therefore ensuring that the packets are properly prioritised by the CAN Protocol.
+
+
+\begin{center}
+\begin{tabular}{l c c}
+\toprule
+Field & Bits & Description \\
+\midrule
+Receiver & 5 & Destination node ID \\
+Sender & 5 & Source node ID \\
+Priority & 1 & Message priority (0=low, 1=high) \\
+\midrule
+\textbf{Total} & \textbf{11} & Standard CAN ID \\
+\bottomrule
+\end{tabular}
+
+\end{center}
+
+% TODO: Describe ID allocation strategy and priority rules

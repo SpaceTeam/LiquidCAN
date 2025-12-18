@@ -1,0 +1,8 @@
+\section{Versioning and Extension Mechanisms}\label{sec:versioning}
+% TODO: Describe:
+% - Version tracking using firmware_hash and liquidcan_hash
+% - Protocol versioning strategy
+% - Backwards compatibility rules
+% - How to handle unknown message types
+This protocol uses semantic versioning.
+See \href{https://semver.org/}{https://semver.org/} for a detailed description. A minor update version would, for example, be adding a new datatype or a new message type . Every update of the document must trigger an update of the liquidCAN repo, containing the Rust and C code for each implementation. The updated repo must be reflected in the \texttt{liquidcan\_hash} field of the \texttt{node\_info\_res} used in the firmware/server.
