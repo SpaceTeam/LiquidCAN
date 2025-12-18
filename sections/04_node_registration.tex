@@ -1,5 +1,5 @@
 \section{Node Registration}\label{sec:node-registration}
 As soon as a node comes online (or when it receives a \texttt{node\_info\_req}, it sends out a \texttt{node\_info\_res}.
-This announces the node to the bus and includes its name, number of variables and parameters, and its firmware version through
+This announces the node to the bus and includes its name, number of telemetries and parameters, and its firmware version through
 the firmware and LiquidCan hashes (see \ref{struct:NodeInfoRes}). The central server registers the new node and waits for \texttt{field\_registration} messages. From this point on the 
 node is able to send/receive messages on the bus.

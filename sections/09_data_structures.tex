@@ -11,7 +11,7 @@ bitwidth=\widthof{liquid\_hash },
 leftcurly=., leftcurlyspace=2pt]{8}
 \begin{leftwordgroup} {0}
  \bitheader[bitformatting=\large]{0-7} \\
-\bitbox{1}{var\_cnt} & \bitbox{1}{par\_cnt} & 
+\bitbox{1}{tel\_cnt} & \bitbox{1}{par\_cnt} & 
 \bitbox{4}{firmware\_hash} &
 & &  \bitbox{2}{liquid\_hash  }
 \end{leftwordgroup}\\
@@ -36,7 +36,8 @@ leftcurly=., leftcurlyspace=2pt]{8}
 \bitbox[lr]{8}{  }
 \end{leftwordgroup}\\
 \begin{leftwordgroup} {7}
-\bitbox[lrb]{8}{  }
+\bitbox[lrb]{7}{  }
+\bitbox[t]{1}{}
 \end{leftwordgroup}\\
 
 \end{bytefield}
@@ -54,7 +55,7 @@ leftcurly=., leftcurlyspace=2pt]{8}
 \toprule
 Field & Bytes & Description \\
 \midrule
-var\_cnt & 1 & Number of variables on this node \\
+tel\_cnt & 1 & Number of telemetries on this node \\
 par\_cnt & 1 & Number of parameters on this node \\
 firmware\_hash & 4 & Hash of the firmware version \\
 liquid\_hash & 4 & Hash of the LiquidCan protocol version \\
@@ -99,7 +100,7 @@ typedef struct __attribute__((packed)) {
 \end{lstlisting}
 
 \subsection{FieldRegistration}\label{struct:FieldRegistration}
-Registration information for a variable or parameter field.
+Registration information for a telemetry or parameter field.
 The DataType here refers to the DataType Enum value (see \ref{subsec:DataType}).
 
 \begin{center}
