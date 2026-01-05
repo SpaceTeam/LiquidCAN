@@ -1,6 +1,6 @@
 % /home/raffael/Documents/Nextcloud/Hobbies/SpaceTeam/LiquidCan/documentation.tex
 \documentclass[11pt,a4paper]{article}
-\usepackage[margin=25mm]{geometry}
+\usepackage[margin=20mm,a4paper]{geometry}
 \usepackage{lmodern}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
@@ -17,7 +17,8 @@
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage{bytefield}
-
+\usepackage{pdflscape}
+\usepackage{fancyhdr}
 \hypersetup{
     colorlinks=true,
     linkcolor=blue,
@@ -25,6 +26,8 @@
     pdftitle={CAN Protocol Documentation Template},
     pdfauthor={},
 }
+
+
 
 % Listings for C code
 \lstset{
@@ -40,6 +43,19 @@
     numberstyle=\tiny,
     frame=single,
     captionpos=b
+}
+
+% Define landscape page style
+\fancypagestyle{landscape}{%
+  \fancyhf{} % clear all header and footer fields
+  \renewcommand{\headrulewidth}{0pt}
+  \renewcommand{\footrulewidth}{0pt}
+  % Add rotated page number
+  \fancyfoot[C]{%
+    \begin{tikzpicture}[remember picture, overlay]
+      \node[rotate=90, anchor=south] at (current page.east) [xshift=-1cm, yshift=1cm] {\thepage};
+    \end{tikzpicture}%
+  }
 }
 
 % Custom command for register-style byte field documentation using bytefield package
@@ -80,7 +96,7 @@
 
 \vspace{1cm}
 
-{\large Version 0.1}
+{\large Version 0.2}
 
 \vspace{0.5cm}
 
@@ -100,6 +116,7 @@
 \textbf{Version} & \textbf{Date} & \textbf{Changes} & \textbf{Author} \\
 \midrule
 0.1 & 2025-12-16 & Initial protocol specification proposal & Raffael Rott \\
+0.2 & 2025-12-16 & Implemented Proposals from Team members & Raffael Rott \\
 \midrule
  &  &  &  \\
 \midrule
@@ -111,7 +128,6 @@
 \clearpage
 
 \tableofcontents
-\vspace{6mm}
 
 \clearpage
 

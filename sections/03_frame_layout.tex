@@ -1,8 +1,8 @@
 \section{Common Frame Layout}\label{sec:frame-layout}
 \paragraph{}
 The CAN data field consists of 64 bytes.
-The first byte of each message contains the Message Type. 
-This simple format allows the protocol to be extended in the future by adding more Message Types.
+The first byte of each message contains the message type. 
+This simple format allows the protocol to be extended in the future by adding more message types.
 See Section \ref{sec:message-types} for a detailed description of message types and their numeric values.
 
 \begin{center}
@@ -10,7 +10,7 @@ See Section \ref{sec:message-types} for a detailed description of message types 
 \toprule
 Field & Bytes & Description \\
 \midrule
-Message\_Type & 1 & Type of message (see Message Types) \\
+message\_type & 1 & Type of message (see Message Types) \\
 data & 63 & Payload data \\
 \bottomrule
 \end{tabular}

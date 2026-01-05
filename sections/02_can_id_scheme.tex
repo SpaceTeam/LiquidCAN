@@ -3,7 +3,7 @@ Each device on the bus has its own unique Node ID. The Server is assigned the No
 The CAN ID is composed of 11 bits. It contains the sender and receiver Node IDs and a priority bit.
 
 \paragraph{}
-Note the location of the priority bit. It is set as the last bit here since 
+Note the location of the priority bit: It is set as the last bit here since 
 this document expects little-endianness. On the actual bus the priority bit will be sent first, therefore ensuring that the packets are properly prioritised by the CAN Protocol.
 
 

@@ -5,4 +5,8 @@
 % - Backwards compatibility rules
 % - How to handle unknown message types
 This protocol uses semantic versioning.
-See \href{https://semver.org/}{https://semver.org/} for a detailed description. A minor update version would, for example, be adding a new datatype or a new message type . Every update of the document must trigger an update of the liquidCAN repo, containing the Rust and C code for each implementation. The updated repo must be reflected in the \texttt{liquidcan\_hash} field of the \texttt{node\_info\_res} used in the firmware/server.
+See \href{https://semver.org/}{https://semver.org/} for a detailed description. A minor update version would, for example, be adding a new datatype or a new message type . Every update of the document must trigger an update of the liquidCAN repo, containing the Rust and C code for each implementation. The updated repo must be reflected in the \texttt{liquidcan\_hash} field of the \texttt{node\_info\_announcement} used in the firmware/server. 
+
+\paragraph{}
+The Firmware in the system can run with minor or patch version differences, "major" changes are not allowed to run simulaneously.
+The server can inform the operators in case there is firmware running with different major versions.

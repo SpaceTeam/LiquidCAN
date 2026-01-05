@@ -55,7 +55,7 @@ leftcurly=., leftcurlyspace=2pt]{8}
 \toprule
 Field & Bytes & Description \\
 \midrule
-tel\_cnt & 1 & Number of telemetries on this node \\
+tel\_cnt & 1 & Number of telemetryValues on this node \\
 par\_cnt & 1 & Number of parameters on this node \\
 firmware\_hash & 4 & Hash of the firmware version \\
 liquid\_hash & 4 & Hash of the LiquidCan protocol version \\
@@ -100,7 +100,7 @@ typedef struct __attribute__((packed)) {
 \end{lstlisting}
 
 \subsection{FieldRegistration}\label{struct:FieldRegistration}
-Registration information for a telemetry or parameter field.
+Registration information for a telemetryValue or parameter field.
 The DataType here refers to the DataType Enum value (see \ref{subsec:DataType}).
 
 \begin{center}
@@ -126,9 +126,8 @@ typedef struct __attribute__((packed)) {
 } field_registration_t;
 \end{lstlisting}
 
-\subsection{FieldGroupDefinition}\label{struct:FieldGroupDefinition}
-Defines a group of related fields for efficient batch updates.
-The 
+\subsection{TelemetryGroupDefinition}\label{struct:TelemetryGroupDefinition}
+Defines a group of related telemetryValues for efficient batch updates.
 \begin{center}
 \begin{tabular}{l c l}
 \toprule
@@ -142,17 +141,15 @@ field\_ids & 62 & Array of field IDs in this group \\
 \end{tabular}
 \end{center}
 
-% TODO: Describe field group usage and maximum number of fields per group
-
-\begin{lstlisting}[caption={FieldGroupDefinition struct}]
+\begin{lstlisting}[caption={TelemetryGroupDefinition struct}]
 typedef struct __attribute__((packed)) {
     uint8_t group_id;
     uint8_t field_ids[62];
-} field_group_definition_t;
+} telemetry_group_definition_t;
 \end{lstlisting}
 
-\subsection{FieldGroupUpdate}\label{struct:FieldGroupUpdate}
-Updates all field values in a previously defined group.
+\subsection{TelemetryGroupUpdate}\label{struct:TelemetryGroupUpdate}
+Updates all telemetryValues from a previously defined group.
 
 \begin{center}
 \begin{tabular}{l c l}
@@ -160,26 +157,26 @@ Updates all field values in a previously defined group.
 Field & Bytes & Description \\
 \midrule
 group\_id & 1 & Group identifier \\
-values & 62 & Packed values for all fields in the group \\
+values & 62 & Packed values of all telemetry values in the group \\
 \midrule
 \textbf{Total} & \textbf{63} & \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\textbf{Note:} The values are packed in the same order as announced in the FieldGroupDefinition.
-
+\textbf{Note:} The values are packed in the same order as announced in the TelemetryGroupDefinition.
+ 
 % TODO: Describe value packing rules and alignment
 
-\begin{lstlisting}[caption={FieldGroupUpdate struct}]
+\begin{lstlisting}[caption={TelemetryGroupUpdate struct}]
 typedef struct __attribute__((packed)) {
     uint8_t group_id;
     uint8_t values[62];
-} field_group_update_t;
+} telemetry_group_update_t;
 \end{lstlisting}
 
 \subsection{HeartBeat}\label{struct:HeartBeat}
-Simple heartbeat message with counter.
+Heartbeat message with counter.
 
 \begin{center}
 \begin{tabular}{l c l}
@@ -208,9 +205,9 @@ Request to set a parameter value.
 Field & Bytes & Description \\
 \midrule
 parameter\_id & 1 & Parameter identifier \\
-value & 62 & New value (type depends on parameter) \\
+value & 61 & New value (type depends on parameter) \\
 \midrule
-\textbf{Total} & \textbf{63} & \\
+\textbf{Total} & \textbf{62} & \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -218,11 +215,26 @@ value & 62 & New value (type depends on parameter) \\
 \begin{lstlisting}[caption={ParameterSetReq struct}]
 typedef struct __attribute__((packed)) {
     uint8_t parameter_id;
-    uint8_t value[62];
+    uint8_t value[61];
 } parameter_set_req_t;
 \end{lstlisting}
 
-\subsection{ParameterSetRes}\label{struct:ParameterSetRes}
+\subsection{ParameterSetStatus}\label{subsec:ParameterSetStatus}
+Status codes for parameter set operations:
+\begin{center}
+\begin{tabular}{l l l}
+\toprule
+Enum Value & Status Name & Description \\
+\midrule
+0 & \texttt{Success} & Parameter was successfully set \\
+1 & \texttt{InvalidParameterID} & The parameter ID does not exist \\
+2 & \texttt{ParameterLocked} & The parameter is locked and cannot be modified \\
+3 & \texttt{NodeToNodeModification} & The parameter was modified by another node\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{ParameterSetConfirmation}\label{struct:ParameterSetConfirmation}
 Response to a parameter set request.
 
 \begin{center}
@@ -231,7 +243,8 @@ Response to a parameter set request.
 Field & Bytes & Description \\
 \midrule
 parameter\_id & 1 & Parameter identifier \\
-value & 62 & Confirmed value after set operation \\
+status & 1 & Status code (ParameterSetStatus enum) \\
+value & 61 & Confirmed value after set operation \\
 \midrule
 \textbf{Total} & \textbf{63} & \\
 \bottomrule
@@ -239,11 +252,12 @@ value & 62 & Confirmed value after set operation \\
 \end{center}
 
 
-\begin{lstlisting}[caption={ParameterSetRes struct}]
+\begin{lstlisting}[caption={ParameterSetConfirmation struct}]
 typedef struct __attribute__((packed)) {
     uint8_t parameter_id;
-    uint8_t value[62];
-} parameter_set_res_t;
+    uint8_t status;
+    uint8_t value[61];
+} parameter_set_confirmation_t;
 \end{lstlisting}
 
 \subsection{FieldGetReq}\label{struct:FieldGetReq}
@@ -316,15 +330,15 @@ typedef struct __attribute__((packed)) {
 \end{lstlisting}
 
 \subsection{FieldIDLookupRes}\label{struct:FieldIDLookupRes}
-Response with requested field id and a status byte which shows if the node has found the field name.
+Response with requested field id and the datatype of the field.
 \\
 \begin{center}
 \begin{tabular}{l c l}
 \toprule
 Field & Bytes & Description \\
 \midrule
-status & 1 Byte & Status byte (0=not found, 1=found) \\
 field\_id & 1 Byte & Field ID \\
+field\_type & 1 Byte & Field Datatype\\
 \midrule
 \textbf{Total} & \textbf{63} & \\
 \bottomrule
@@ -335,8 +349,8 @@ field\_id & 1 Byte & Field ID \\
 
 \begin{lstlisting}[caption={FieldIDLookupRes struct}]
 typedef struct __attribute__((packed)) {
-    uint8_t status;
     uint8_t fieldID;
+    uint8_t field_type;
 } field_id_lookup_res;
 \end{lstlisting}
 
@@ -378,6 +392,7 @@ Enum Values & Type Name & Description \\
 4 & \texttt{UInt32} & 32-bit unsigned integer \\
 5 & \texttt{UInt16} & 16-bit unsigned integer \\
 6 & \texttt{UInt8} & 8-bit unsigned integer \\
+7 & \texttt{Boolean} & 1-bit boolean value \\
 
 \bottomrule
 \end{tabular}

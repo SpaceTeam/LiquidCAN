@@ -5,15 +5,16 @@
 % Error handling policy:
 % Versioning scheme:
 % Interoperability constraints:
-The purpose of the LiquidCan protocol is to serve at the heart of all future Liquids Projects at the TU Wien Space Team.
-Building on the CAN FD Standard, it defines the way our client devices (such as ECUs) communicate with the central server and with each other.
-It is designed to be as simple and extensible as possible. Care has been taken to minimize the amount of common type definitions between the server and the nodes.
+The purpose of the LiquidCan protocol is to serve at the heart of all future liquids projects at the TU Wien Space Team.
+Building on the CAN FD standard, it defines how our client devices (such as ECUs) communicate with each other and the central server and with each other.
+It is designed to be as simple and extensible as possible. One of the design goals of this protocol is to minimize the amount of common type or field definitions between the server and the nodes.
 
 \section{Notation and Conventions}\label{sec:notation}
 \begin{itemize}
     \item This protocol uses the CAN-FD extension
     \item All fields are little endian.
-    \item Payload length: 64 Byte CAN FD.
+    \item All strings are ASCII encoded and null terminated.
+    \item Payload length: Variable depending on message type but up to 64 Bytes.
 \end{itemize}
 
 \subsection{Common Terms}\label{subsec:common-terms}
@@ -24,9 +25,9 @@ Term & Description \\
 \midrule
 (CAN) Client & A CAN client is a device which is connected to the bus\\ 
 Node & Every client which is not the server\\ 
-Telemetry & A telemetry is a non-externally modifiable value which gets periodically sent to the server\\
+TelemetryValue & A telemetryValue is a non-externally modifiable value \\ &  which periodically gets sent to the server\\
 Parameters & Parameters can be externally modified\\
-Field & An encompassing term for telemetries and parameters\\ 
+Field & An encompassing term for telemetryValues and parameters\\ 
 ECU & A commonly used embedded CAN device at the TU Wien Space Team
 
 \end{tabular}
