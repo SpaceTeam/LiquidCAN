@@ -58,12 +58,6 @@
   }
 }
 
-% Custom command for register-style byte field documentation using bytefield package
-% This creates a register layout similar to STM32/FDCAN documentation style
-\newcommand{\regfield}[3]{%
-    % #1 = byte(s), #2 = field name, #3 = description
-    \item \textbf{Byte(s) #1: \texttt{#2}} -- #3
-}
 \newcommand{\todo}[1]{\textcolor{red}{\textbf{TODO:} #1}}
 \title{LiquidCan Protocol Documentation}
 \author{SpaceTeam}
@@ -117,10 +111,7 @@
 \midrule
 0.1 & 2025-12-16 & Initial protocol specification proposal & Raffael Rott \\
 0.2 & 2025-12-16 & Implemented Proposals from Team members & Raffael Rott \\
-\midrule
- &  &  &  \\
-\midrule
- &  &  &  \\
+0.3 & 2026-01-05 & Fixed final bugs before initial release & Raffael Rott \\
 \bottomrule
 \end{longtable}
 \end{center}
