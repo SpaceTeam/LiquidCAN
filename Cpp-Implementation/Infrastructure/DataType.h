@@ -3,15 +3,16 @@
 
 #include <cstdint>
 
-enum DataType : uint8_t{
-    FLOAT32 = 0,
-    INT32 = 1,
-    INT16 = 2,
-    INT0 = 3,
-    UINT32 = 4,
-    UINT16 = 5,
-    UINT8 = 6,
-    BOOLEAN = 7
+enum Data_type : uint8_t
+{
+    float32 = 0,
+    int32 = 1,
+    int16 = 2,
+    int8 = 3,
+    uint32 = 4,
+    uint16 = 5,
+    uint8 = 6,
+    boolean = 7
 };
 
 #endif // DATATYPE_H

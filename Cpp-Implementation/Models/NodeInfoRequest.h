@@ -8,38 +8,39 @@
 #include <cstdint>
 #include <Infrastructure/CanMessage.h>
 
-class NodeInfoRequest : public CanMessage{
+class Node_info_request : public Can_message
+{
 public:
-    NodeInfoRequest();
-    NodeInfoRequest(uint8_t tel_cnt,
-                    uint8_t par_cnt,
-                    uint32_t firmware_hash,
-                    uint32_t liquid_hash,
-                    const char* device_name);
+    Node_info_request();
+    Node_info_request(uint8_t tel_cnt,
+                      uint8_t par_cnt,
+                      uint32_t firmware_hash,
+                      uint32_t liquid_hash,
+                      const uint8_t* device_name,
+                      uint8_t length);
 
-    bool setTelemetryCount(uint8_t tel_cnt);
-    uint8_t getTelemetryCount() const;
+    bool set_telemetry_count(uint8_t tel_cnt);
+    uint8_t get_telemetry_count() const;
 
-    bool setParameterCount(uint8_t par_cnt);
-    uint8_t getParameterCount() const;
+    bool set_parameter_count(uint8_t par_cnt);
+    uint8_t get_parameter_count() const;
 
-    bool setFirmwareHash(uint32_t firmware_hash);
-    uint32_t getFirmwareHash() const;
+    bool set_firmware_hash(uint32_t firmware_hash);
+    uint32_t get_firmware_hash() const;
 
-    bool setLiquidHash(uint32_t liquid_hash);
-    uint32_t getLiquidHash() const;
+    bool set_liquid_hash(uint32_t liquid_hash);
+    uint32_t get_liquid_hash() const;
 
-    bool setDeviceName(const char* device_name, uint8_t device_name_length);
-    const char* getDeviceName() const;
-    uint8_t getDeviceNameLength() const;
-
+    bool set_device_name(const uint8_t* device_name, uint8_t length);
+    const uint8_t* get_device_name() const;
+    uint8_t get_device_name_length() const;
 private:
-    uint8_t tel_cnt_;           // Number of telemetryValues on this node
-    uint8_t par_cnt_;           // Number of parameters ot his node
-    uint32_t firmware_hash_;    // Hash of the firmware version
-    uint32_t liquid_hash_;      // Hash of the LiquidCan protocol version
-    uint8_t device_name_length; // Internal counter to track device_name length
-    char device_name_[53];      // Human-readable device name
+    uint8_t tel_cnt_;               // Number of telemetry values on this node
+    uint8_t par_cnt_;               // Number of parameters on this node
+    uint32_t firmware_hash_;        // Hash of the firmware version
+    uint32_t liquid_hash_;          // Hash of the LiquidCan protocol version
+    uint8_t device_name_length_;    // Internal counter to track device_name length
+    uint8_t device_name_[53];       // Human-readable device name
 };
 
 #endif //NODEINFOREQUEST_H

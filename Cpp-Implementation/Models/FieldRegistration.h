@@ -5,24 +5,26 @@
 #include <Infrastructure/CanMessage.h>
 #include <Infrastructure/DataType.h>
 
-class FieldRegistration : public CanMessage{
+class Field_registration : public Can_message
+{
 public:
-    FieldRegistration();
-    FieldRegistration(uint8_t field_id, DataType field_type, const char* device_name);
+    Field_registration();
+    Field_registration(uint8_t field_id, Data_type field_type, const uint8_t* device_name, uint8_t length);
 
-    bool setFieldId(uint8_t field_id);
-    uint8_t getFieldId();
+    bool set_field_id(uint8_t field_id);
+    uint8_t get_field_id() const;
 
-    bool setFieldType(DataType field_type);
-    DataType getFieldType();
+    bool set_field_type(Data_type field_type);
+    Data_type get_field_type() const;
 
-    bool setFieldName(const char* field_name);
-    const char* getFieldName() const;
-
+    bool set_field_name(const uint8_t* field_name, uint8_t length);
+    const uint8_t* get_field_name() const;
+    uint8_t get_field_name_length() const;
 private:
-    uint8_t field_id_;      // Unique identifier for this field
-    DataType field_type_;    // Field DataType
-    char field_name_[63];   // Human-readable field name
+    uint8_t field_id_;             // Unique identifier for this field
+    Data_type field_type_;         // Field data type
+    uint8_t field_name_length_;    // Field name length
+    uint8_t field_name_[63];       // Human-readable field name
 };
 
 #endif // FIELDREGISTRATION_H

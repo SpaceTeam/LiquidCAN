@@ -4,10 +4,13 @@
 
 #ifndef CANMESSAGE_H
 #define CANMESSAGE_H
-class CanMessage{
+
+class Can_message
+{
 public:
-    virtual ~CanMessage();
+    virtual ~Can_message() = default;
 protected:
-    CanMessage();
+    Can_message() = default;
 };
+
 #endif //CANMESSAGE_H

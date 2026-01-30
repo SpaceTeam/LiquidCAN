@@ -4,17 +4,18 @@
 #include <cstdint>
 #include <Infrastructure/CanMessage.h>
 
-class TelemetryGroupUpdate : public CanMessage {
+class Telemetry_group_update : public Can_message
+{
 public:
-    TelemetryGroupUpdate();
-    TelemetryGroupUpdate(uint8_t group_id, const uint8_t* values, uint8_t value_count);
+    Telemetry_group_update();
+    Telemetry_group_update(uint8_t group_id, const uint8_t* values, uint8_t value_count);
 
-    bool setGroupId(uint8_t group_id);
-    uint8_t getGroupId() const;
+    bool set_group_id(uint8_t group_id);
+    uint8_t get_group_id() const;
 
-    bool setGroupValues(uint8_t* values, uint8_t value_count);
-    uint8_t* getGroupValues() const;
-    uint8_t getGroupValueLength() const;
+    bool set_group_values(const uint8_t* values, uint8_t value_count);
+    const uint8_t* get_group_values() const;
+    uint8_t get_group_value_length() const;
 private:
     uint8_t group_id_;      // Group identifier
     uint8_t value_length_;  // Internal Counter to track length of the value field
