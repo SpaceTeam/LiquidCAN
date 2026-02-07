@@ -1,0 +1,162 @@
+enum:
+  - name: "parameter_set_status"
+    type: "uint8"
+    values:
+      - name: "success"
+        value: 0
+      - name: "invalid_parameter_id"
+        value: 1
+      - name: "parameter_locked"
+        value: 2
+      - name: "node_to_node_modification"
+  - name: "data_type"
+    type: "uint8"
+    values:
+      - name: "float32"
+        value: 0
+      - name: "int32"
+        value: 1
+      - name: "int16"
+        value: 2
+      - name: "int8"
+        value: 3
+      - name: "uint32"
+        value: 4
+      - name: "uint16"
+        value: 5
+      - name: "uint8"
+        value: 6
+      - name: "boolean"
+        value: 7
+  - name: "message_type"
+    type: "uint8"
+    values:
+      - name: "node_info_req"
+        value: 0
+      - name: "node_info_announcement"
+        value: 1
+      - name: "info_status"
+        value: 10
+      - name: "warning_status"
+        value: 11
+      - name: "error_status"
+        value: 12
+      - name: "telemetry_value_registration"
+        value: 20
+      - name: "parameter_registration"
+        value: 21
+      - name: "telemetry_group_definition"
+        value: 30
+      - name: "telemetry_group_update"
+        value: 31
+      - name: "heartbeat_req"
+        value: 40
+      - name: "heartbeat_res"
+        value: 41
+      - name: "parameter_set_req"
+        value: 50
+      - name: "parameter_set_confirmation"
+        value: 51
+      - name: "parameter_set_lock"
+        value: 52
+      - name: "parameter_set_lock_confirmation"
+        value: 53
+      - name: "field_get_req"
+        value: 60
+      - name: "field_get_res"
+        value: 61
+      - name: "field_id_lookup_req"
+        value: 62
+      - name: "field_id_lookup_res"
+        value: 63
+
+struct:
+  - name: "node_info_res"
+    fields:
+      - name: "tel_cnt"
+        type: "uint8"
+      - name: "par_cnt"
+        type: "uint8"
+      - name: "firmware_hash"
+        type: "uint32"
+      - name: "liquid_hash"
+        type: "uint32"
+      - name: "device_name"
+        type: "char"
+        length: 53
+  - name: "status"
+    fields:
+      - name: "msg"
+        type: "char"
+        length: 63
+  - name: "field_registration"
+    fields:
+      - name: "field_id"
+        type: "uint8"
+      - name: "field_type"
+        type: "uint8"
+      - name: "field_name"
+        type: "char"
+        length: 61
+  - name: "telemetry_group_definition"
+    fields:
+      - name: "group_id"
+        type: "uint8"
+      - name: "field_ids"
+        type: "uint8"
+        length: 62
+  - name: "telemetry_group_update"
+    fields:
+      - name: "group_id"
+        type: "uint8"
+      - name: "values"
+        type: "uint8"
+        length: 62
+  - name: "heart_beat"
+    fields:
+      - name: "counter"
+        type: "uint32"
+  - name: "parameter_set_req"
+    fields:
+      - name: "parameter_id"
+        type: "uint8"
+      - name: "value"
+        type: "uint8"
+        length: 61
+  - name: "parameter_set_confirmation"
+    fields:
+      - name: "parameter_id"
+        type: "uint8"
+      - name: "status"
+        type: "parameter_set_status"
+      - name: "value"
+        type: "uint8"
+        length: 61
+  - name: "field_get_req"
+    fields:
+      - name: "field_id"
+        type: "uint8"
+  - name: "field_get_res"
+    fields:
+      - name: "field_id"
+        type: "uint8"
+      - name: "value"
+        type: "uint8"
+        length: 62
+  - name: "field_ID_lookup_req"
+    fields:
+      - name: "field_name"
+        type: "uint8"
+        length: 61
+  - name: "field_ID_lookup_res"
+    fields:
+      - name: "field_id"
+        type: "uint8"
+      - name: "field_type"
+        type: "data_type"
+  - name: "parameter_set_lock"
+    fields:
+      - name: "parameter_id"
+        type: "uint8"
+      - name: "lock_status"
+        type: "uint8"

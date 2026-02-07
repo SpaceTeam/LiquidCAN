@@ -10,13 +10,6 @@
 
 class Field_get_request : public Can_message
 {
-public:
-    Field_get_request();
-    Field_get_request(uint8_t field_id);
-
-    bool set_field_id(uint8_t field_id);
-    uint8_t get_field_id() const;
-private:
     uint8_t field_id_;    // Field identifier
 };
 

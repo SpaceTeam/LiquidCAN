@@ -8,7 +8,7 @@
 enum Can_message_type
 {
     node_info_request = 0,                    // Request node information
-    node_info_announcement = 1,                // Response with node capabilities and identification
+    node_info_announcement = 1,               // Response with node capabilities and identification
     info_status = 10,                         // Information status message
     warning_status = 11,                      // Warning status message
     error_status = 12,                        // Error status message
