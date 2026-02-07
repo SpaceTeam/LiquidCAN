@@ -9,6 +9,7 @@ enum:
       - name: "parameter_locked"
         value: 2
       - name: "node_to_node_modification"
+        value: 3
   - name: "data_type"
     type: "uint8"
     values:
@@ -143,12 +144,12 @@ struct:
       - name: "value"
         type: "uint8"
         length: 62
-  - name: "field_ID_lookup_req"
+  - name: "field_id_lookup_req"
     fields:
       - name: "field_name"
         type: "uint8"
         length: 61
-  - name: "field_ID_lookup_res"
+  - name: "field_id_lookup_res"
     fields:
       - name: "field_id"
         type: "uint8"
