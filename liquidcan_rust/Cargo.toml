@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+anyhow = "1.0.100"
 modular-bitfield = "0.13.0"
 static_assertions = "1.1.0"
 zerocopy = "0.8.27"

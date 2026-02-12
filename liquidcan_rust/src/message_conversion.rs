@@ -1,5 +1,6 @@
 use crate::can_message::{CanMessage, CanMessagePadded};
 use crate::CanMessageFrame;
+use anyhow::anyhow;
 use zerocopy::{IntoBytes, TryFromBytes, FromZeros};
 
 impl TryFrom<CanMessageFrame> for CanMessage {
