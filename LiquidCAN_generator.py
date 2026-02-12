@@ -6,18 +6,6 @@ enum_path = "/Infrastructure"
 model_path = "/Model"
 
 
-type_converter_dict_cpp = {
-    "uint8": "uint8_t",
-    "uint16": "uint16_t",
-    "uint32": "uint32_t",
-    "int8": "int8_t",
-    "int16": "int16_t",
-    "int32": "int32_t",
-    "float": "float_t",
-    "char": "int8_t"
-}
-
-
 def convert_to_camel_case(value, upper=True):
     components = value.split("_")
 
@@ -58,12 +46,11 @@ def create_enum(name, fields, data_type=None):
     code = f"enum {name}"
 
     if data_type is not None:
-        if not data_type in type_converter_dict_cpp:
+        if not data_type.endswith("_t"):
             raise Exception(f"Invalid data type: {data_type}")
-        code += f" : {type_converter_dict_cpp[data_type]}\n"
+        code += f" : {data_type}\n"
     else:
         code += "\n"
-
     code += "{\n"
 
     has_value = False
@@ -81,7 +68,7 @@ def create_enum(name, fields, data_type=None):
     return add_cpp_preprocessor_directives(code, name)
 
 
-def create_struct(name, fields, language):
+def create_struct(name, fields):
     name = change_case(name, "type")
     code = f"struct {name}\n"
     code += "{\n"
@@ -90,8 +77,8 @@ def create_struct(name, fields, language):
         code += "\t"
 
         type_name = element["type"]
-        if type_name in type_converter_dict_cpp:
-            code += type_converter_dict_cpp[type_name]
+        if type_name.endswith("_t"):
+            code += type_name
         else:
             code += f"{change_case(type_name, "type")}"
             required_types.append(type_name)
@@ -135,7 +122,7 @@ cpp_struct_code = []
 if "struct" in data.keys():
     for struct in data["struct"]:
         name = struct["name"]
-        cpp_code, requires = create_struct(name, struct["fields"], "cpp")
+        cpp_code, requires = create_struct(name, struct["fields"])
         cpp_struct_code.append((name, cpp_code, requires))
         type_set.add(name)
 

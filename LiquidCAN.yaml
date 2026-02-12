@@ -1,6 +1,6 @@
 enum:
   - name: "parameter_set_status"
-    type: "uint8"
+    type: "uint8_t"
     values:
       - name: "success"
         value: 0
@@ -11,7 +11,7 @@ enum:
       - name: "node_to_node_modification"
         value: 3
   - name: "data_type"
-    type: "uint8"
+    type: "uint8_t"
     values:
       - name: "float32"
         value: 0
@@ -30,7 +30,7 @@ enum:
       - name: "boolean"
         value: 7
   - name: "message_type"
-    type: "uint8"
+    type: "uint8_t"
     values:
       - name: "node_info_req"
         value: 0
@@ -75,89 +75,89 @@ struct:
   - name: "node_info_res"
     fields:
       - name: "tel_cnt"
-        type: "uint8"
+        type: "uint8_t"
       - name: "par_cnt"
-        type: "uint8"
+        type: "uint8_t"
       - name: "firmware_hash"
-        type: "uint32"
+        type: "uint32_t"
       - name: "liquid_hash"
-        type: "uint32"
+        type: "uint32_t"
       - name: "device_name"
-        type: "char"
+        type: "int8_t"
         length: 53
   - name: "status"
     fields:
       - name: "msg"
-        type: "char"
+        type: "int8_t"
         length: 63
   - name: "field_registration"
     fields:
       - name: "field_id"
-        type: "uint8"
+        type: "uint8_t"
       - name: "field_type"
-        type: "uint8"
+        type: "uint8_t"
       - name: "field_name"
-        type: "char"
+        type: "int8_t"
         length: 61
   - name: "telemetry_group_definition"
     fields:
       - name: "group_id"
-        type: "uint8"
+        type: "uint8_t"
       - name: "field_ids"
-        type: "uint8"
+        type: "uint8_t"
         length: 62
   - name: "telemetry_group_update"
     fields:
       - name: "group_id"
-        type: "uint8"
+        type: "uint8_t"
       - name: "values"
-        type: "uint8"
+        type: "uint8_t"
         length: 62
   - name: "heart_beat"
     fields:
       - name: "counter"
-        type: "uint32"
+        type: "uint32_t"
   - name: "parameter_set_req"
     fields:
       - name: "parameter_id"
-        type: "uint8"
+        type: "uint8_t"
       - name: "value"
-        type: "uint8"
+        type: "uint8_t"
         length: 61
   - name: "parameter_set_confirmation"
     fields:
       - name: "parameter_id"
-        type: "uint8"
+        type: "uint8_t"
       - name: "status"
         type: "parameter_set_status"
       - name: "value"
-        type: "uint8"
+        type: "uint8_t"
         length: 61
   - name: "field_get_req"
     fields:
       - name: "field_id"
-        type: "uint8"
+        type: "uint8_t"
   - name: "field_get_res"
     fields:
       - name: "field_id"
-        type: "uint8"
+        type: "uint8_t"
       - name: "value"
-        type: "uint8"
+        type: "uint8_t"
         length: 62
   - name: "field_id_lookup_req"
     fields:
       - name: "field_name"
-        type: "uint8"
+        type: "uint8_t"
         length: 61
   - name: "field_id_lookup_res"
     fields:
       - name: "field_id"
-        type: "uint8"
+        type: "uint8_t"
       - name: "field_type"
         type: "data_type"
   - name: "parameter_set_lock"
     fields:
       - name: "parameter_id"
-        type: "uint8"
+        type: "uint8_t"
       - name: "lock_status"
-        type: "uint8"
+        type: "uint8_t"
