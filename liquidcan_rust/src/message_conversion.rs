@@ -1,7 +1,7 @@
-use crate::can_message::{CanMessage, CanMessagePadded};
 use crate::CanMessageFrame;
+use crate::can_message::{CanMessage, CanMessagePadded};
 use anyhow::anyhow;
-use zerocopy::{IntoBytes, TryFromBytes, FromZeros};
+use zerocopy::{FromZeros, IntoBytes, TryFromBytes};
 
 impl TryFrom<CanMessageFrame> for CanMessage {
     type Error = anyhow::Error;
@@ -30,9 +30,10 @@ impl From<CanMessage> for CanMessageFrame {
 
 #[cfg(test)]
 mod tests {
+    use crate::CanMessageFrame;
     use crate::can_message::CanMessage;
     use crate::payloads;
-    use crate::CanMessageFrame;
+    use zerocopy::FromZeros;
 
     fn test_round_trip(msg: CanMessage) {
         let can_data: CanMessageFrame = msg.clone().into();
@@ -213,5 +214,56 @@ mod tests {
         };
         let msg = CanMessage::FieldIDLookupRes { payload };
         test_round_trip(msg);
+    }
+
+    #[test]
+    fn test_invalid_message_type() {
+        // Create a frame with an invalid message type (255 is not defined)
+        let mut frame = CanMessageFrame::new_zeroed();
+        frame.message_type = 255;
+        
+        let result: Result<CanMessage, _> = frame.try_into();
+        assert!(result.is_err(), "Expected error for invalid message type");
+        let err_msg = result.unwrap_err().to_string();
+        assert!(err_msg.contains("Failed to convert message"), 
+                "Error message should mention conversion failure: {}", err_msg);
+    }
+
+    #[test]
+    fn test_invalid_can_data_type() {
+        // Create a FieldRegistration with invalid CanDataType (255 is out of range)
+        let mut frame = CanMessageFrame::new_zeroed();
+        frame.message_type = 20; // TelemetryValueRegistration
+        frame.data[0] = 5; // field_id
+        frame.data[1] = 255; // Invalid CanDataType
+        // Rest is field_name
+        
+        let result: Result<CanMessage, _> = frame.try_into();
+        assert!(result.is_err(), "Expected error for invalid CanDataType");
+    }
+
+    #[test]
+    fn test_invalid_parameter_set_status() {
+        // Create a ParameterSetConfirmation with invalid status
+        let mut frame = CanMessageFrame::new_zeroed();
+        frame.message_type = 51; // ParameterSetConfirmation
+        frame.data[0] = 10; // parameter_id
+        frame.data[1] = 255; // Invalid ParameterSetStatus
+        // Rest is value
+        
+        let result: Result<CanMessage, _> = frame.try_into();
+        assert!(result.is_err(), "Expected error for invalid ParameterSetStatus");
+    }
+
+    #[test]
+    fn test_invalid_parameter_lock_status() {
+        // Create a ParameterSetLockReq with invalid lock status
+        let mut frame = CanMessageFrame::new_zeroed();
+        frame.message_type = 52; // ParameterSetLockReq
+        frame.data[0] = 12; // parameter_id
+        frame.data[1] = 255; // Invalid ParameterLockStatus
+        
+        let result: Result<CanMessage, _> = frame.try_into();
+        assert!(result.is_err(), "Expected error for invalid ParameterLockStatus");
     }
 }

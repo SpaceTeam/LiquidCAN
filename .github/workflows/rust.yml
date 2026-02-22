@@ -22,3 +22,15 @@ jobs:
     - name: Run tests
       working-directory: liquidcan_rust
       run: cargo test --verbose
+    - name: Run macro tests
+      working-directory: liquidcan_rust/liquidcan_rust_macros
+      run: cargo test --verbose
+    - name: Check formatting
+      working-directory: liquidcan_rust
+      run: cargo fmt --all -- --check
+    - name: Run clippy
+      working-directory: liquidcan_rust
+      run: cargo clippy --all-targets --all-features -- -D warnings
+    - name: Run clippy on macros
+      working-directory: liquidcan_rust/liquidcan_rust_macros
+      run: cargo clippy --all-targets --all-features -- -D warnings

@@ -1,6 +1,6 @@
 use modular_bitfield::prelude::B5;
 use modular_bitfield::private::static_assertions;
-use modular_bitfield::{bitfield, Specifier};
+use modular_bitfield::{Specifier, bitfield};
 use std::mem::size_of;
 use zerocopy_derive::{FromBytes, Immutable, IntoBytes, KnownLayout};
 

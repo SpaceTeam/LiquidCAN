@@ -1,4 +1,4 @@
-use modular_bitfield::{private::static_assertions, Specifier};
+use modular_bitfield::{Specifier, private::static_assertions};
 use zerocopy_derive::{FromBytes, Immutable, IntoBytes, TryFromBytes};
 
 #[derive(Specifier, Debug, Copy, Clone, PartialEq, Eq, Immutable, TryFromBytes, IntoBytes)]
