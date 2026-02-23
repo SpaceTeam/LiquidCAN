@@ -221,12 +221,15 @@ mod tests {
         // Create a frame with an invalid message type (255 is not defined)
         let mut frame = CanMessageFrame::new_zeroed();
         frame.message_type = 255;
-        
+
         let result: Result<CanMessage, _> = frame.try_into();
         assert!(result.is_err(), "Expected error for invalid message type");
         let err_msg = result.unwrap_err().to_string();
-        assert!(err_msg.contains("Failed to convert message"), 
-                "Error message should mention conversion failure: {}", err_msg);
+        assert!(
+            err_msg.contains("Failed to convert message"),
+            "Error message should mention conversion failure: {}",
+            err_msg
+        );
     }
 
     #[test]
@@ -237,7 +240,7 @@ mod tests {
         frame.data[0] = 5; // field_id
         frame.data[1] = 255; // Invalid CanDataType
         // Rest is field_name
-        
+
         let result: Result<CanMessage, _> = frame.try_into();
         assert!(result.is_err(), "Expected error for invalid CanDataType");
     }
@@ -250,9 +253,12 @@ mod tests {
         frame.data[0] = 10; // parameter_id
         frame.data[1] = 255; // Invalid ParameterSetStatus
         // Rest is value
-        
+
         let result: Result<CanMessage, _> = frame.try_into();
-        assert!(result.is_err(), "Expected error for invalid ParameterSetStatus");
+        assert!(
+            result.is_err(),
+            "Expected error for invalid ParameterSetStatus"
+        );
     }
 
     #[test]
@@ -262,8 +268,11 @@ mod tests {
         frame.message_type = 52; // ParameterSetLockReq
         frame.data[0] = 12; // parameter_id
         frame.data[1] = 255; // Invalid ParameterLockStatus
-        
+
         let result: Result<CanMessage, _> = frame.try_into();
-        assert!(result.is_err(), "Expected error for invalid ParameterLockStatus");
+        assert!(
+            result.is_err(),
+            "Expected error for invalid ParameterLockStatus"
+        );
     }
 }
