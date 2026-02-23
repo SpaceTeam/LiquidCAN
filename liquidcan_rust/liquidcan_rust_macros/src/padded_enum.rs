@@ -338,14 +338,13 @@ mod tests {
         let incomplete = vec![1, 0x77]; // implicit padding
         let recovered = MyProto::from_bytes(&incomplete).unwrap();
         assert_eq!(jump, recovered);
-        
+
         // Test empty input (should be padded with 0 -> Tag=0 -> Move{val:0})
         let empty: Vec<u8> = vec![];
         let recovered_empty = MyProto::from_bytes(&empty).unwrap();
         match recovered_empty {
-             MyProto::Move { dist } => assert_eq!(dist, 0),
-             _ => panic!("Expected Move(0)"),
+            MyProto::Move { dist } => assert_eq!(dist, 0),
+            _ => panic!("Expected Move(0)"),
         }
     }
 }
-
