@@ -97,7 +97,7 @@ macro_rules! padded_enum {
             impl $Original {
                 /// Serializes the enum to a vector of bytes, omitting the padding.
                 #[allow(unused)]
-                pub fn to_bytes<'a>(&self, buf: &'a mut [u8; $size]) -> &'a [u8] {
+                pub fn to_bytes(self, buf: & mut [u8; $size]) -> &[u8] {
                     match self {
                         $(
                             $Original::$Variant $( { $($field_name),* } )? => {
@@ -218,7 +218,7 @@ mod tests {
         assert_eq!(bytes[0], 0);
         assert_eq!(&bytes[1..5], &[0xDD, 0xCC, 0xBB, 0xAA]);
 
-        let padded_back: MyProtoPadded = MyProtoPadded::try_read_from_bytes(&bytes).unwrap();
+        let padded_back: MyProtoPadded = MyProtoPadded::try_read_from_bytes(bytes).unwrap();
         // Round trip
         let back: MyProto = padded_back.into();
         assert_eq!(original, back);
@@ -305,7 +305,7 @@ mod tests {
         let padded: ConstDiscriminantPadded = original.into();
         let bytes = padded.as_bytes();
 
-        let padded_back = ConstDiscriminantPadded::try_read_from_bytes(&bytes).unwrap();
+        let padded_back = ConstDiscriminantPadded::try_read_from_bytes(bytes).unwrap();
         let back: ConstDiscriminant = padded_back.into();
         assert_eq!(original, back);
     }
@@ -320,7 +320,7 @@ mod tests {
         assert_eq!(bytes[0], 0);
         assert_eq!(&bytes[1..5], &[0xD4, 0xC3, 0xB2, 0xA1]);
 
-        let recovered = MyProto::from_bytes(&bytes).unwrap();
+        let recovered = MyProto::from_bytes(bytes).unwrap();
         assert_eq!(original, recovered);
 
         // Test padding logic
@@ -331,7 +331,7 @@ mod tests {
         assert_eq!(bytes_jump.len(), 2);
         assert_eq!(bytes_jump, vec![1, 0x77]);
 
-        let recovered_jump = MyProto::from_bytes(&bytes_jump).unwrap();
+        let recovered_jump = MyProto::from_bytes(bytes_jump).unwrap();
         assert_eq!(jump, recovered_jump);
 
         // Test undersized input
