@@ -265,9 +265,9 @@ Request to retrieve a field value
 \begin{center}
 \begin{tabular}{l c l}
 \toprule
-Field & Bits/Bytes & Description \\
+Field & Bytes & Description \\
 \midrule
-field\_id & 1 Byte & Field identifier \\
+field\_id & 1 & Field identifier \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -289,9 +289,9 @@ Response with requested field value.
 Field & Bytes & Description \\
 \midrule
 field\_id & 1 & Field identifier \\
-value & 62 & Field value \\
+value & 61 & Field value \\
 \midrule
-\textbf{Total} & \textbf{63} & \\
+\textbf{Total} & \textbf{62} & \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -301,7 +301,7 @@ value & 62 & Field value \\
 \begin{lstlisting}[caption={FieldGetRes struct}]
 typedef struct __attribute__((packed)) {
     uint8_t field_id;
-    uint8_t value[62];
+    uint8_t value[61];
 } field_get_res_t;
 \end{lstlisting}
 
@@ -394,7 +394,7 @@ Enum Values & Type Name & Description \\
 4 & \texttt{UInt32} & 32-bit unsigned integer \\
 5 & \texttt{UInt16} & 16-bit unsigned integer \\
 6 & \texttt{UInt8} & 8-bit unsigned integer \\
-7 & \texttt{Boolean} & 1-bit boolean value \\
+7 & \texttt{Boolean} & 8-bit value: non 0 value equals true \\
 
 \bottomrule
 \end{tabular}
