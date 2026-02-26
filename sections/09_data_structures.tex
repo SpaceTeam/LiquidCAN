@@ -205,9 +205,9 @@ Request to set a parameter value.
 Field & Bytes & Description \\
 \midrule
 parameter\_id & 1 & Parameter identifier \\
-value & 61 & New value (type depends on parameter) \\
+value & 60 & New value (type depends on parameter) \\
 \midrule
-\textbf{Total} & \textbf{62} & \\
+\textbf{Total} & \textbf{61} & \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -215,9 +215,22 @@ value & 61 & New value (type depends on parameter) \\
 \begin{lstlisting}[caption={ParameterSetReq struct}]
 typedef struct __attribute__((packed)) {
     uint8_t parameter_id;
-    uint8_t value[61];
+    uint8_t value[60];
 } parameter_set_req_t;
 \end{lstlisting}
+
+\subsection{FieldStatus}\label{subsec:FieldStatus}
+Status codes for field access operations:
+\begin{center}
+\begin{tabular}{l l l}
+\toprule
+Enum Value & Status Name & Description \\
+\midrule
+0 & \texttt{Ok} & Field exists and operation was successful \\
+1 & \texttt{NotFound} & Field does not exist \\
+\bottomrule
+\end{tabular}
+\end{center}
 
 \subsection{ParameterSetStatus}\label{subsec:ParameterSetStatus}
 Status codes for parameter set operations:
@@ -244,19 +257,23 @@ Field & Bytes & Description \\
 \midrule
 parameter\_id & 1 & Parameter identifier \\
 status & 1 & Status code (ParameterSetStatus enum) \\
-value & 61 & Confirmed value after set operation \\
+field\_status & 1 & Field existence status (FieldStatus enum) \\
+value & 60 & Confirmed value after set operation \\
 \midrule
 \textbf{Total} & \textbf{63} & \\
 \bottomrule
 \end{tabular}
 \end{center}
 
+\textbf{Note:} If the parameter is not found (field\_status = NotFound), the value field should contain the originally requested value from the ParameterSetReq message, and the status field should indicate InvalidParameterID.
+
 
 \begin{lstlisting}[caption={ParameterSetConfirmation struct}]
 typedef struct __attribute__((packed)) {
     uint8_t parameter_id;
     uint8_t status;
-    uint8_t value[61];
+    uint8_t field_status;
+    uint8_t value[60];
 } parameter_set_confirmation_t;
 \end{lstlisting}
 
@@ -289,19 +306,23 @@ Response with requested field value.
 Field & Bytes & Description \\
 \midrule
 field\_id & 1 & Field identifier \\
-value & 61 & Field value \\
+field\_status & 1 & Field existence status (FieldStatus enum) \\
+value & 60 & Field value \\
 \midrule
 \textbf{Total} & \textbf{62} & \\
 \bottomrule
 \end{tabular}
 \end{center}
 
+\textbf{Note:} If the field is not found (field\_status = NotFound), the field\_id should still contain the requested field ID from the FieldGetReq message, and the value field content is undefined.
+
 % TODO: Describe response format
 
 \begin{lstlisting}[caption={FieldGetRes struct}]
 typedef struct __attribute__((packed)) {
     uint8_t field_id;
-    uint8_t value[61];
+    uint8_t field_status;
+    uint8_t value[60];
 } field_get_res_t;
 \end{lstlisting}
 
@@ -339,11 +360,14 @@ Field & Bytes & Description \\
 \midrule
 field\_id & 1 & Field ID \\
 field\_type & 1 & Field Datatype\\
+field\_status & 1 & Field existence status (FieldStatus enum) \\
 \midrule
-\textbf{Total} & \textbf{2} & \\
+\textbf{Total} & \textbf{3} & \\
 \bottomrule
 \end{tabular}
 \end{center}
+
+\textbf{Note:} If the field is not found (field\_status = NotFound), the field\_id should be set to 0 (reserved invalid ID) and field\_type is undefined.
 
 % TODO: Describe response format
 
@@ -351,6 +375,7 @@ field\_type & 1 & Field Datatype\\
 typedef struct __attribute__((packed)) {
     uint8_t fieldID;
     uint8_t field_type;
+    uint8_t field_status;
 } field_id_lookup_res_t;
 \end{lstlisting}
 
@@ -364,11 +389,14 @@ Field & Bytes & Description \\
 \midrule
 parameter\_id & 1 & Parameter identifier to lock \\
 parameter\_lock & 1 & Lock status(0=unlocked, 1=locked) \\
+field\_status & 1 & Field existence status (FieldStatus enum) \\
 \midrule
-\textbf{Total} & \textbf{2} & \\
+\textbf{Total} & \textbf{3} & \\
 \bottomrule
 \end{tabular}
 \end{center}
+
+\textbf{Note:} If the parameter is not found (field\_status = NotFound), the parameter\_id should still contain the requested parameter ID from the ParameterSetLockReq message.
 
 % TODO: Describe parameter locking mechanism and use cases
 
@@ -376,6 +404,7 @@ parameter\_lock & 1 & Lock status(0=unlocked, 1=locked) \\
 typedef struct __attribute__((packed)) {
     uint8_t parameter_id;
     uint8_t lock_status;
+    uint8_t field_status;
 } parameter_set_lock_t;
 \end{lstlisting}
 
