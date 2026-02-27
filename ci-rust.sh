@@ -71,13 +71,25 @@ run_step() {
             cargo clippy --all-targets --all-features -- -D warnings || { print_error "Clippy check failed"; return 1; }
             print_success "Clippy check passed"
             ;;
-        
+        clippy-fix)
+            print_step "Run clippy with fix"
+            cd "$LIQUIDCAN_RUST_DIR"
+            cargo clippy --all-targets --all-features --fix -- -D warnings || { print_error "Clippy fix failed"; return 1; }
+            print_success "Clippy fix passed"
+            ;;
         clippy-macros)
             print_step "Run clippy on macros"
             cd "$MACROS_DIR"
             cargo clippy --all-targets --all-features -- -D warnings || { print_error "Clippy check on macros failed"; return 1; }
             print_success "Clippy check on macros passed"
             ;;
+        clippy-macros-fix)
+            print_step "Run clippy on macros with fix"
+            cd "$MACROS_DIR"
+            cargo clippy --all-targets --all-features --fix -- -D warnings || { print_error "Clippy fix on macros failed"; return 1; }
+            print_success "Clippy fix on macros passed"
+            ;;
+        
         
         all)
             run_step build || return 1
