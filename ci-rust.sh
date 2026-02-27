@@ -64,6 +64,12 @@ run_step() {
             cargo fmt --all -- --check || { print_error "Formatting check failed"; return 1; }
             print_success "Formatting check passed"
             ;;
+        fmt-fix)
+            print_step "Fix formatting"
+            cd "$LIQUIDCAN_RUST_DIR"
+            cargo fmt --all || { print_error "Formatting fix failed"; return 1; }
+            print_success "Formatting fixed"
+            ;;
         
         clippy)
             print_step "Run clippy"

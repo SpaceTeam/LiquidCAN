@@ -92,7 +92,7 @@ pub struct ParameterSetConfirmationPayload {
 }
 #[derive(Specifier, Debug, Copy, Clone, PartialEq, Eq, Immutable, TryFromBytes, IntoBytes)]
 #[repr(u8)]
-pub enum FieldStatus{
+pub enum FieldStatus {
     Ok = 0,
     NotFound = 1,
 }
@@ -106,9 +106,9 @@ pub struct FieldGetReqPayload {
 #[derive(Debug, Clone, TryFromBytes, IntoBytes, Immutable, PartialEq)]
 #[repr(C, packed)]
 pub struct FieldGetResPayload {
-    pub field_id: u8,    // Field identifier
+    pub field_id: u8,              // Field identifier
     pub field_status: FieldStatus, // Status of the get operation
-    pub value: [u8; 61], // Field value
+    pub value: [u8; 61],           // Field value
 }
 
 #[derive(Debug, Clone, FromBytes, IntoBytes, Immutable, PartialEq)]
@@ -121,9 +121,9 @@ pub struct FieldIDLookupReqPayload {
 #[derive(Debug, Clone, TryFromBytes, IntoBytes, Immutable, PartialEq)]
 #[repr(C, packed)]
 pub struct FieldIDLookupResPayload {
-    pub field_id: u8,            // Field ID
+    pub field_id: u8,              // Field ID
     pub field_status: FieldStatus, // Status of the lookup operation
-    pub field_type: CanDataType, // Field Datatype
+    pub field_type: CanDataType,   // Field Datatype
 }
 
 // Important: only derives TryFromBytes because bool doesn't derive FromBytes
@@ -139,7 +139,7 @@ pub struct ParameterSetLockPayload {
 pub struct ParameterSetLockConfirmationPayload {
     pub parameter_id: u8,                    // Parameter identifier to lock
     pub parameter_lock: ParameterLockStatus, // Lock status (0=unlocked, 1=locked)
-    pub field_status: FieldStatus // Status of the parameter
+    pub field_status: FieldStatus,           // Status of the parameter
 }
 
 static_assertions::const_assert_eq!(size_of::<NodeInfoResPayload>(), 63);
@@ -156,3 +156,7 @@ static_assertions::const_assert_eq!(size_of::<FieldIDLookupReqPayload>(), 61);
 static_assertions::const_assert_eq!(size_of::<FieldIDLookupResPayload>(), 3);
 static_assertions::const_assert_eq!(size_of::<ParameterSetLockConfirmationPayload>(), 3);
 static_assertions::const_assert_eq!(size_of::<ParameterSetLockPayload>(), 2);
+static_assertions::const_assert_eq!(size_of::<FieldStatus>(), 1);
+static_assertions::const_assert_eq!(size_of::<CanDataType>(), 1);
+static_assertions::const_assert_eq!(size_of::<ParameterSetStatus>(), 1);
+static_assertions::const_assert_eq!(size_of::<ParameterLockStatus>(), 1);
