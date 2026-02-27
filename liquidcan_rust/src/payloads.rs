@@ -90,6 +90,12 @@ pub struct ParameterSetConfirmationPayload {
     pub status: ParameterSetStatus, // Status code
     pub value: [u8; 61],            // Confirmed value after set operation
 }
+#[derive(Specifier, Debug, Copy, Clone, PartialEq, Eq, Immutable, TryFromBytes, IntoBytes)]
+#[repr(u8)]
+pub enum FieldStatus{
+    Ok = 0,
+    NotFound = 1,
+}
 
 #[derive(Debug, Clone, FromBytes, IntoBytes, Immutable, PartialEq)]
 #[repr(C, packed)]
@@ -97,11 +103,12 @@ pub struct FieldGetReqPayload {
     pub field_id: u8, // Field identifier
 }
 
-#[derive(Debug, Clone, FromBytes, IntoBytes, Immutable, PartialEq)]
+#[derive(Debug, Clone, TryFromBytes, IntoBytes, Immutable, PartialEq)]
 #[repr(C, packed)]
 pub struct FieldGetResPayload {
     pub field_id: u8,    // Field identifier
-    pub value: [u8; 62], // Field value
+    pub field_status: FieldStatus, // Status of the get operation
+    pub value: [u8; 61], // Field value
 }
 
 #[derive(Debug, Clone, FromBytes, IntoBytes, Immutable, PartialEq)]
@@ -115,6 +122,7 @@ pub struct FieldIDLookupReqPayload {
 #[repr(C, packed)]
 pub struct FieldIDLookupResPayload {
     pub field_id: u8,            // Field ID
+    pub field_status: FieldStatus, // Status of the lookup operation
     pub field_type: CanDataType, // Field Datatype
 }
 
@@ -124,6 +132,14 @@ pub struct FieldIDLookupResPayload {
 pub struct ParameterSetLockPayload {
     pub parameter_id: u8,                    // Parameter identifier to lock
     pub parameter_lock: ParameterLockStatus, // Lock status (0=unlocked, 1=locked)
+}
+// Important: only derives TryFromBytes because bool doesn't derive FromBytes
+#[derive(Debug, Clone, TryFromBytes, IntoBytes, Immutable, PartialEq)]
+#[repr(C, packed)]
+pub struct ParameterSetLockConfirmationPayload {
+    pub parameter_id: u8,                    // Parameter identifier to lock
+    pub parameter_lock: ParameterLockStatus, // Lock status (0=unlocked, 1=locked)
+    pub field_status: FieldStatus // Status of the parameter
 }
 
 static_assertions::const_assert_eq!(size_of::<NodeInfoResPayload>(), 63);
@@ -137,5 +153,6 @@ static_assertions::const_assert_eq!(size_of::<ParameterSetConfirmationPayload>()
 static_assertions::const_assert_eq!(size_of::<FieldGetReqPayload>(), 1);
 static_assertions::const_assert_eq!(size_of::<FieldGetResPayload>(), 63);
 static_assertions::const_assert_eq!(size_of::<FieldIDLookupReqPayload>(), 61);
-static_assertions::const_assert_eq!(size_of::<FieldIDLookupResPayload>(), 2);
+static_assertions::const_assert_eq!(size_of::<FieldIDLookupResPayload>(), 3);
+static_assertions::const_assert_eq!(size_of::<ParameterSetLockConfirmationPayload>(), 3);
 static_assertions::const_assert_eq!(size_of::<ParameterSetLockPayload>(), 2);

@@ -34,6 +34,7 @@ mod tests {
     use crate::can_message::CanMessage;
     use crate::payloads;
     use zerocopy::FromZeros;
+    use crate::payloads::FieldStatus;
 
     fn test_round_trip(msg: CanMessage) {
         let can_data: CanMessageFrame = msg.clone().into();
@@ -172,9 +173,10 @@ mod tests {
 
     #[test]
     fn test_parameter_set_lock_confirmation() {
-        let payload = payloads::ParameterSetLockPayload {
+        let payload = payloads::ParameterSetLockConfirmationPayload {
             parameter_id: 13,
             parameter_lock: payloads::ParameterLockStatus::Unlocked,
+            field_status: FieldStatus::Ok,
         };
         let msg = CanMessage::ParameterSetLockConfirmation { payload };
         test_round_trip(msg);
@@ -191,7 +193,8 @@ mod tests {
     fn test_field_get_res() {
         let payload = payloads::FieldGetResPayload {
             field_id: 21,
-            value: [0xCC; 62],
+            field_status:FieldStatus::Ok,
+            value: [0xCC; 61],
         };
         let msg = CanMessage::FieldGetRes { payload };
         test_round_trip(msg);
@@ -210,6 +213,7 @@ mod tests {
     fn test_field_id_lookup_res() {
         let payload = payloads::FieldIDLookupResPayload {
             field_id: 22,
+            field_status:FieldStatus::Ok,
             field_type: payloads::CanDataType::Float32,
         };
         let msg = CanMessage::FieldIDLookupRes { payload };

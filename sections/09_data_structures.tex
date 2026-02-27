@@ -205,7 +205,7 @@ Request to set a parameter value.
 Field & Bytes & Description \\
 \midrule
 parameter\_id & 1 & Parameter identifier \\
-value & 60 & New value (type depends on parameter) \\
+value & 61 & New value (type depends on parameter) \\
 \midrule
 \textbf{Total} & \textbf{61} & \\
 \bottomrule
@@ -257,8 +257,7 @@ Field & Bytes & Description \\
 \midrule
 parameter\_id & 1 & Parameter identifier \\
 status & 1 & Status code (ParameterSetStatus enum) \\
-field\_status & 1 & Field existence status (FieldStatus enum) \\
-value & 60 & Confirmed value after set operation \\
+value & 61 & Confirmed value after set operation \\
 \midrule
 \textbf{Total} & \textbf{63} & \\
 \bottomrule
@@ -272,8 +271,7 @@ value & 60 & Confirmed value after set operation \\
 typedef struct __attribute__((packed)) {
     uint8_t parameter_id;
     uint8_t status;
-    uint8_t field_status;
-    uint8_t value[60];
+    uint8_t value[61];
 } parameter_set_confirmation_t;
 \end{lstlisting}
 
@@ -307,7 +305,7 @@ Field & Bytes & Description \\
 \midrule
 field\_id & 1 & Field identifier \\
 field\_status & 1 & Field existence status (FieldStatus enum) \\
-value & 60 & Field value \\
+value & 61 & Field value \\
 \midrule
 \textbf{Total} & \textbf{62} & \\
 \bottomrule
@@ -389,7 +387,32 @@ Field & Bytes & Description \\
 \midrule
 parameter\_id & 1 & Parameter identifier to lock \\
 parameter\_lock & 1 & Lock status(0=unlocked, 1=locked) \\
-field\_status & 1 & Field existence status (FieldStatus enum) \\
+\midrule
+\textbf{Total} & \textbf{2} & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% TODO: Describe parameter locking mechanism and use cases
+
+\begin{lstlisting}[caption={ParameterSetLock struct}]
+typedef struct __attribute__((packed)) {
+    uint8_t parameter_id;
+    uint8_t lock_status;
+} parameter_set_lock_t;
+\end{lstlisting}
+
+\subsection{ParameterSetLockConfirmation}\label{struct:ParameterSetLockConfirmation}
+Confirmation of a parameter locking request.
+
+\begin{center}
+\begin{tabular}{l c l}
+\toprule
+Field & Bytes & Description \\
+\midrule
+parameter\_id & 1 & Parameter identifier to lock \\
+parameter\_lock & 1 & Lock status(0=unlocked, 1=locked) \\
+field\_status & 1 & Field status (FieldStatus enum) \\
 \midrule
 \textbf{Total} & \textbf{3} & \\
 \bottomrule
@@ -400,12 +423,12 @@ field\_status & 1 & Field existence status (FieldStatus enum) \\
 
 % TODO: Describe parameter locking mechanism and use cases
 
-\begin{lstlisting}[caption={ParameterSetLock struct}]
+\begin{lstlisting}[caption={ParameterSetLockConfirmation struct}]
 typedef struct __attribute__((packed)) {
     uint8_t parameter_id;
     uint8_t lock_status;
     uint8_t field_status;
-} parameter_set_lock_t;
+} parameter_set_lock__confirmation_t;
 \end{lstlisting}
 
 
