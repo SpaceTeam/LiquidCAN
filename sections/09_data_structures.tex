@@ -215,7 +215,7 @@ value & 61 & New value (type depends on parameter) \\
 \begin{lstlisting}[caption={ParameterSetReq struct}]
 typedef struct __attribute__((packed)) {
     uint8_t parameter_id;
-    uint8_t value[60];
+    uint8_t value[61];
 } parameter_set_req_t;
 \end{lstlisting}
 
@@ -320,7 +320,7 @@ value & 61 & Field value \\
 typedef struct __attribute__((packed)) {
     uint8_t field_id;
     uint8_t field_status;
-    uint8_t value[60];
+    uint8_t value[61];
 } field_get_res_t;
 \end{lstlisting}
 
