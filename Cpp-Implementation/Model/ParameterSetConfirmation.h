@@ -2,6 +2,7 @@
 #define PARAMETERSETCONFIRMATION_H
 
 #include <cstdint>
+#include <../Infrastructure/ParameterSetStatus.h>
 
 struct ParameterSetConfirmation
 {

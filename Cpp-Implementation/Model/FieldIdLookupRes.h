@@ -2,6 +2,7 @@
 #define FIELDIDLOOKUPRES_H
 
 #include <cstdint>
+#include <../Infrastructure/DataType.h>
 
 struct FieldIdLookupRes
 {

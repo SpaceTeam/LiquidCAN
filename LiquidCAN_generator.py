@@ -32,23 +32,31 @@ def change_case(value, value_type):
     return value
 
 
-def add_cpp_preprocessor_directives(code_string, name):
+def add_cpp_preprocessor_directives(code_string, name, enum_includes=None):
     new_code_string = f"#ifndef {name.upper()}_H\n"
     new_code_string += f"#define {name.upper()}_H\n\n"
-    new_code_string += "#include <cstdint>\n\n"
+    new_code_string += "#include <cstdint>\n"
+
+    if enum_includes:
+        for inf_file in enum_includes:
+            new_code_string += f"#include <..{enum_path}/{inf_file}.h>\n\n"
+    else:
+        new_code_string += "\n"
+
     new_code_string += code_string + "\n"
     new_code_string += "#endif"
     return new_code_string
 
 
 def create_enum(name, fields, data_type=None):
+    global default_types
     name = change_case(name, "type")
     code = f"enum {name}"
 
     if data_type is not None:
-        if not data_type.endswith("_t"):
-            raise Exception(f"Invalid data type: {data_type}")
-        code += f" : {data_type}\n"
+        if not data_type in default_types:
+            raise Exception(f"Invalid data type: {data_type} in enum: {name}")
+        code += f" : {default_types[data_type]["conversion"]["cpp"]}\n"
     else:
         code += "\n"
     code += "{\n"
@@ -69,17 +77,23 @@ def create_enum(name, fields, data_type=None):
 
 
 def create_struct(name, fields):
+    global default_types, enum_types
+
+    inf_files = []
+
     name = change_case(name, "type")
     code = f"struct {name}\n"
     code += "{\n"
+
     required_types = []
     for element in fields:
         code += "\t"
-
         type_name = element["type"]
-        if type_name.endswith("_t"):
-            code += type_name
+        if type_name in default_types:
+            code += default_types[type_name]["conversion"]["cpp"]
         else:
+            if type_name in enum_types:
+                inf_files.append(change_case(type_name, "type"))
             code += f"{change_case(type_name, "type")}"
             required_types.append(type_name)
 
@@ -88,7 +102,7 @@ def create_struct(name, fields):
             code += f"[{element["length"]}]"
         code += ";\n"
     code += "}\n"
-    return add_cpp_preprocessor_directives(code, name), required_types
+    return add_cpp_preprocessor_directives(code, name, inf_files), required_types
 
 
 def prepare_write(path):
@@ -104,11 +118,20 @@ with open("./LiquidCAN.yaml", 'r') as file:
 
 type_set = set()
 
+# default types
+default_types = {}
+if "dtypes" in data.keys():
+    default_types = data["dtypes"]
+else:
+    print("No default types defined!")
+
 # enum
 cpp_enum_code = []
+enum_types = set()
 if "enum" in data.keys():
     for enum in data["enum"]:
         name = enum["name"]
+        enum_types.add(enum["name"])
         if "type" in enum.keys():
             cpp_enum = create_enum(name, enum["values"], enum["type"])
         else:
@@ -116,12 +139,17 @@ if "enum" in data.keys():
 
         type_set.add(name)
         cpp_enum_code.append((name, cpp_enum))
+else:
+    print("No enum defined!")
 
 # struct
 cpp_struct_code = []
 if "struct" in data.keys():
     for struct in data["struct"]:
         name = struct["name"]
+        if name in enum_types:
+            raise Exception(f"The name: {name} can't be used for a enum and a struct!")
+
         cpp_code, requires = create_struct(name, struct["fields"])
         cpp_struct_code.append((name, cpp_code, requires))
         type_set.add(name)
