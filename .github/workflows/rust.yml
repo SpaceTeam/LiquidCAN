@@ -17,20 +17,14 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build
-      working-directory: liquidcan_rust
-      run: cargo build --verbose
+      run: ./ci-rust.sh build
     - name: Run tests
-      working-directory: liquidcan_rust
-      run: cargo test --verbose
+      run: ./ci-rust.sh test
     - name: Run macro tests
-      working-directory: liquidcan_rust/liquidcan_rust_macros
-      run: cargo test --verbose
+      run: ./ci-rust.sh test-macros
     - name: Check formatting
-      working-directory: liquidcan_rust
-      run: cargo fmt --all -- --check
+      run: ./ci-rust.sh fmt
     - name: Run clippy
-      working-directory: liquidcan_rust
-      run: cargo clippy --all-targets --all-features -- -D warnings
+      run: ./ci-rust.sh clippy
     - name: Run clippy on macros
-      working-directory: liquidcan_rust/liquidcan_rust_macros
-      run: cargo clippy --all-targets --all-features -- -D warnings
+      run: ./ci-rust.sh clippy-macros

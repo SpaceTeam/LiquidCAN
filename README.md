@@ -25,3 +25,27 @@ When creating issues or pull requests with protocol changes, generate a PDF diff
 ```bash
 latexdiff-vc --git --flatten --pdf -r <old-commit> LiquidCAN.tex 
 ```
+
+## Development
+
+### Running CI Checks
+
+The repository includes a CI script (`ci-rust.sh`) that runs all quality checks on the Rust implementation. This script is used both locally and in GitHub Actions 
+
+**Run all checks:**
+```bash
+./ci-rust.sh
+# or explicitly
+./ci-rust.sh all
+```
+
+**Run individual checks:**
+```bash
+./ci-rust.sh build         # Build the project
+./ci-rust.sh test          # Run tests
+./ci-rust.sh test-macros   # Run macro tests
+./ci-rust.sh fmt           # Check code formatting
+./ci-rust.sh clippy        # Run clippy linter
+./ci-rust.sh clippy-macros # Run clippy on macros
+```
+You can fix formatting or linter issues by adding the -fix suffix to the command. e.g: `./ci-rust.sh clippy-fix`
