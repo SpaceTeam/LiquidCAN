@@ -1,27 +1,25 @@
 use crate::CanMessageFrame;
-use crate::can_message::{CanMessage, CanMessagePadded};
-use anyhow::anyhow;
-use zerocopy::{FromZeros, IntoBytes, TryFromBytes};
+use crate::can_message::CanMessage;
+use liquidcan_rust_macros::byte_codec::ByteCodec;
+use zerocopy::{FromZeros, IntoBytes};
 
 impl TryFrom<CanMessageFrame> for CanMessage {
     type Error = anyhow::Error;
 
     fn try_from(frame: CanMessageFrame) -> Result<Self, Self::Error> {
         let frame_data = frame.as_bytes();
-        let padded_msg = CanMessagePadded::try_read_from_bytes(frame_data)
-            .map_err(|e| anyhow!("Failed to convert message: {}", e))?;
-        let msg: CanMessage = padded_msg.into();
-        Ok(msg)
+        let (message, _) = CanMessage::deserialize(frame_data)?;
+        Ok(message)
     }
 }
 
 impl From<CanMessage> for CanMessageFrame {
     fn from(msg: CanMessage) -> Self {
         let mut msg_frame = CanMessageFrame::new_zeroed();
-        let discriminant = msg.discriminant();
-        let padded_msg: CanMessagePadded = msg.into();
-        // The first byte is the discriminant, which is set separately.
-        let bytes: &[u8] = &padded_msg.as_bytes()[1..];
+        let mut buf = Vec::with_capacity(64);
+        msg.serialize(&mut buf);
+        let discriminant = buf[0];
+        let bytes = &buf[1..];
         msg_frame.data[..bytes.len()].copy_from_slice(bytes);
         msg_frame.message_type = discriminant;
         msg_frame
@@ -226,7 +224,7 @@ mod tests {
         assert!(result.is_err(), "Expected error for invalid message type");
         let err_msg = result.unwrap_err().to_string();
         assert!(
-            err_msg.contains("Failed to convert message"),
+            err_msg.contains("invalid enum discriminant"),
             "Error message should mention conversion failure: {}",
             err_msg
         );
