@@ -74,9 +74,9 @@ pub enum CanMessage {
     ParameterSetLockReq {
         payload: payloads::ParameterSetLockPayload,
     } = 52,
-    #[pad(61)]
+    #[pad(60)]
     ParameterSetLockConfirmation {
-        payload: payloads::ParameterSetLockPayload,
+        payload: payloads::ParameterSetLockConfirmationPayload,
     } = 53,
 
     // Field Access
@@ -92,7 +92,7 @@ pub enum CanMessage {
     FieldIDLookupReq {
         payload: payloads::FieldIDLookupReqPayload,
     } = 62,
-    #[pad(61)]
+    #[pad(60)]
     FieldIDLookupRes {
         payload: payloads::FieldIDLookupResPayload,
     } = 63,
