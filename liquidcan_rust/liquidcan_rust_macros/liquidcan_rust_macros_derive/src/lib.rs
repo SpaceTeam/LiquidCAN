@@ -90,9 +90,11 @@ fn build_serialize(
     });
 
     let expanded = quote! { fn serialize(&self, out: &mut Vec<u8>) {
+        let out_len_before = out.len();
         match self {
             #(#match_arms)*
         }
+        assert!(out.len() - out_len_before <= Self::MAX_SERIALIZED_SIZE, "Serialized data exceeds MAX_SERIALIZED_SIZE");
     }};
 
     return expanded;
@@ -239,8 +241,10 @@ fn build_struct_serialize(type_name: &syn::Ident, fields: &Fields) -> proc_macro
             let field_names: Vec<_> = fields.named.iter().map(|f| &f.ident).collect();
             quote! {
                 fn serialize(&self, out: &mut Vec<u8>) {
+                    let out_len_before = out.len();
                     let #type_name { #( #field_names ),* } = self;
                     #( #field_names.serialize(out); )*
+                    assert!(out.len() - out_len_before <= Self::MAX_SERIALIZED_SIZE, "Serialized data exceeds MAX_SERIALIZED_SIZE");
                 }
             }
         }
@@ -251,8 +255,10 @@ fn build_struct_serialize(type_name: &syn::Ident, fields: &Fields) -> proc_macro
 
             quote! {
                 fn serialize(&self, out: &mut Vec<u8>) {
+                    let out_len_before = out.len();
                     let #type_name( #( #field_idents ),* ) = self;
                     #( #field_idents.serialize(out); )*
+                    assert!(out.len() - out_len_before <= Self::MAX_SERIALIZED_SIZE, "Serialized data exceeds MAX_SERIALIZED_SIZE");
                 }
             }
         }
