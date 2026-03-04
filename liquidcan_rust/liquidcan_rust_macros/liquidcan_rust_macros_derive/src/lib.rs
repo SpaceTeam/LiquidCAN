@@ -1,7 +1,8 @@
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
 use syn::{
-    Data, DeriveInput, Fields, Variant, parse_macro_input, punctuated::Punctuated, token::Comma,
+    Data, DeriveInput, Fields, Type, Variant, parse_macro_input, punctuated::Punctuated,
+    token::Comma,
 };
 
 #[proc_macro_derive(ByteCodec)]
@@ -12,22 +13,26 @@ pub fn derive_byte_codec(input: TokenStream) -> TokenStream {
     let expanded = match &input.data {
         Data::Enum(data_enum) => {
             let variants = &data_enum.variants;
+            let max_size_impl = build_enum_max_serialized_size(variants);
             let serialize_impl = build_serialize(type_name, variants);
             let deserialize_impl = build_deserialize(type_name, variants);
 
             quote! {
                 impl liquidcan_rust_macros::byte_codec::ByteCodec for #type_name {
+                    #max_size_impl
                     #serialize_impl
                     #deserialize_impl
                 }
             }
         }
         Data::Struct(data_struct) => {
+            let max_size_impl = build_struct_max_serialized_size(&data_struct.fields);
             let serialize_impl = build_struct_serialize(type_name, &data_struct.fields);
             let deserialize_impl = build_struct_deserialize(type_name, &data_struct.fields);
 
             quote! {
                 impl liquidcan_rust_macros::byte_codec::ByteCodec for #type_name {
+                    #max_size_impl
                     #serialize_impl
                     #deserialize_impl
                 }
@@ -91,6 +96,81 @@ fn build_serialize(
     }};
 
     return expanded;
+}
+
+fn max_size_for_type(ty: &Type) -> proc_macro2::TokenStream {
+    quote! {
+        <#ty as liquidcan_rust_macros::byte_codec::ByteCodec>::MAX_SERIALIZED_SIZE
+    }
+}
+
+fn sum_max_sizes(types: Vec<&Type>) -> proc_macro2::TokenStream {
+    let field_sizes: Vec<_> = types.into_iter().map(max_size_for_type).collect();
+    quote! {
+        0usize #( + #field_sizes )*
+    }
+}
+
+fn build_struct_max_serialized_size(fields: &Fields) -> proc_macro2::TokenStream {
+    let payload_size = match fields {
+        Fields::Named(named) => {
+            let types: Vec<_> = named.named.iter().map(|f| &f.ty).collect();
+            sum_max_sizes(types)
+        }
+        Fields::Unnamed(unnamed) => {
+            let types: Vec<_> = unnamed.unnamed.iter().map(|f| &f.ty).collect();
+            sum_max_sizes(types)
+        }
+        Fields::Unit => quote! { 0usize },
+    };
+
+    quote! {
+        const MAX_SERIALIZED_SIZE: usize = #payload_size;
+    }
+}
+
+fn build_enum_max_serialized_size(
+    variants: &Punctuated<Variant, Comma>,
+) -> proc_macro2::TokenStream {
+    let variant_sizes: Vec<_> = variants
+        .iter()
+        .map(|variant| {
+            let payload_size = match &variant.fields {
+                Fields::Named(named) => {
+                    let types: Vec<_> = named.named.iter().map(|f| &f.ty).collect();
+                    sum_max_sizes(types)
+                }
+                Fields::Unnamed(unnamed) => {
+                    let types: Vec<_> = unnamed.unnamed.iter().map(|f| &f.ty).collect();
+                    sum_max_sizes(types)
+                }
+                Fields::Unit => quote! { 0usize },
+            };
+
+            quote! {
+                1usize + (#payload_size)
+            }
+        })
+        .collect();
+
+    let mut max_expr = variant_sizes
+        .first()
+        .cloned()
+        .expect("ByteCodec cannot be derived for enums without variants");
+
+    for size_expr in variant_sizes.iter().skip(1) {
+        max_expr = quote! {
+            {
+                let a = #max_expr;
+                let b = #size_expr;
+                if a > b { a } else { b }
+            }
+        };
+    }
+
+    quote! {
+        const MAX_SERIALIZED_SIZE: usize = #max_expr;
+    }
 }
 
 fn build_deserialize(

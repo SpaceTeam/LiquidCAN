@@ -102,3 +102,18 @@ pub struct ParameterSetLockPayload {
     pub parameter_id: u8,                    // Parameter identifier to lock
     pub parameter_lock: ParameterLockStatus, // Lock status (0=unlocked, 1=locked)
 }
+
+
+static_assertions::const_assert_eq!(NodeInfoResPayload::MAX_SERIALIZED_SIZE, 63);
+static_assertions::const_assert_eq!(StatusPayload::MAX_SERIALIZED_SIZE, 63);
+static_assertions::const_assert_eq!(FieldRegistrationPayload::MAX_SERIALIZED_SIZE, 63);
+static_assertions::const_assert_eq!(TelemetryGroupDefinitionPayload::MAX_SERIALIZED_SIZE, 63);
+static_assertions::const_assert_eq!(TelemetryGroupUpdatePayload::MAX_SERIALIZED_SIZE, 63);
+static_assertions::const_assert_eq!(HeartbeatPayload::MAX_SERIALIZED_SIZE, 4);
+static_assertions::const_assert_eq!(ParameterSetReqPayload::MAX_SERIALIZED_SIZE, 5);
+static_assertions::const_assert_eq!(ParameterSetConfirmationPayload::MAX_SERIALIZED_SIZE, 6);
+static_assertions::const_assert_eq!(FieldGetReqPayload::MAX_SERIALIZED_SIZE, 1);
+static_assertions::const_assert_eq!(FieldGetResPayload::MAX_SERIALIZED_SIZE, 5);
+static_assertions::const_assert_eq!(FieldIDLookupReqPayload::MAX_SERIALIZED_SIZE, 61);
+static_assertions::const_assert_eq!(FieldIDLookupResPayload::MAX_SERIALIZED_SIZE, 2);
+static_assertions::const_assert_eq!(ParameterSetLockPayload::MAX_SERIALIZED_SIZE, 2);

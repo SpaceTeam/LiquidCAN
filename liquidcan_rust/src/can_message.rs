@@ -74,3 +74,5 @@ pub enum CanMessage {
         payload: payloads::FieldIDLookupResPayload,
     } = 63,
 }
+
+static_assertions::const_assert_eq!(CanMessage::MAX_SERIALIZED_SIZE, 64);

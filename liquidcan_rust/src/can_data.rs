@@ -108,6 +108,8 @@ impl CanDataValue {
 }
 
 impl ByteCodec for CanDataValue {
+    const MAX_SERIALIZED_SIZE: usize = 4;
+
     fn serialize(&self, out: &mut Vec<u8>) {
         // don't include the tag in the serialized data, as message type must be known at deserialization time
         match self {
@@ -197,6 +199,8 @@ impl<const N: usize> PartialEq for CanString<N> {
 }
 
 impl<const N: usize> ByteCodec for CanString<N> {
+    const MAX_SERIALIZED_SIZE: usize = N;
+
     fn serialize(&self, out: &mut Vec<u8>) {
         // Write bytes up to the null terminator
         let length = self
@@ -283,6 +287,8 @@ impl<const N: usize> TryFrom<&[CanDataValue]> for PackedCanDataValues<N> {
 }
 
 impl<const N: usize> ByteCodec for PackedCanDataValues<N> {
+    const MAX_SERIALIZED_SIZE: usize = N;
+
     fn serialize(&self, out: &mut Vec<u8>) {
         out.extend_from_slice(&self.data);
     }
@@ -330,6 +336,8 @@ impl<'a, const N: usize> From<&'a NonNullCanBytes<N>> for &'a [u8] {
 }
 
 impl<const N: usize> ByteCodec for NonNullCanBytes<N> {
+    const MAX_SERIALIZED_SIZE: usize = N;
+
     fn serialize(&self, out: &mut Vec<u8>) {
         let len = self.data.iter().position(|&b| b == 0).unwrap_or(N);
         out.extend_from_slice(&self.data[..len]);

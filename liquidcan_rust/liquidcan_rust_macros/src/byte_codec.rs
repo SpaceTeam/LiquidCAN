@@ -3,6 +3,7 @@ use thiserror::Error;
 use zerocopy::{Immutable, IntoBytes, TryFromBytes};
 
 pub trait ByteCodec {
+    const MAX_SERIALIZED_SIZE: usize;
     fn serialize(&self, out: &mut Vec<u8>);
     fn deserialize(input: &[u8]) -> Result<(Self, &[u8]), DeserializationError>
     where
@@ -13,12 +14,14 @@ impl<T> ByteCodec for T
 where
     T: TryFromBytes + IntoBytes + Immutable + Sized,
 {
+    const MAX_SERIALIZED_SIZE: usize = core::mem::size_of::<T>();
+
     fn serialize(&self, out: &mut Vec<u8>) {
         out.extend_from_slice(self.as_bytes());
     }
 
     fn deserialize(input: &[u8]) -> Result<(Self, &[u8]), DeserializationError> {
-        let size = core::mem::size_of::<T>();
+        let size = Self::MAX_SERIALIZED_SIZE;
         if input.len() < size {
             return Err(DeserializationError::NotEnoughData);
         }
