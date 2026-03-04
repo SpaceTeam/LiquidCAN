@@ -57,7 +57,7 @@ pub enum CanMessage {
         payload: payloads::ParameterSetLockPayload,
     } = 52,
     ParameterSetLockConfirmation {
-        payload: payloads::ParameterSetLockPayload,
+        payload: payloads::ParameterSetLockConfirmationPayload,
     } = 53,
 
     // Field Access

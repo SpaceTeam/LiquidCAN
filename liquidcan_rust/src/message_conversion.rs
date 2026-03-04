@@ -29,6 +29,7 @@ mod tests {
     use crate::can_message::CanMessage;
     use crate::payloads;
     use socketcan::EmbeddedFrame;
+    use crate::payloads::FieldStatus;
 
     fn test_round_trip(msg: CanMessage) {
         let can_data: socketcan::CanFdFrame = msg.clone().into();
@@ -199,9 +200,10 @@ mod tests {
 
     #[test]
     fn test_parameter_set_lock_confirmation() {
-        let payload = payloads::ParameterSetLockPayload {
+        let payload = payloads::ParameterSetLockConfirmationPayload {
             parameter_id: 13,
             parameter_lock: payloads::ParameterLockStatus::Unlocked,
+            field_status: FieldStatus::Ok,
         };
         let msg = CanMessage::ParameterSetLockConfirmation { payload };
         test_round_trip(msg);
@@ -218,6 +220,7 @@ mod tests {
     fn test_field_get_res() {
         let payload = payloads::FieldGetResPayload {
             field_id: 21,
+            field_status: FieldStatus::Ok,
             value: payloads::CanDataValue::Boolean(true),
         };
         let msg = CanMessage::FieldGetRes { payload };
@@ -237,6 +240,7 @@ mod tests {
     fn test_field_id_lookup_res() {
         let payload = payloads::FieldIDLookupResPayload {
             field_id: 22,
+            field_status: FieldStatus::Ok,
             field_type: payloads::CanDataType::Float32,
         };
         let msg = CanMessage::FieldIDLookupRes { payload };

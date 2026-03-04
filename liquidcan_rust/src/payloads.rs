@@ -72,6 +72,12 @@ pub struct ParameterSetConfirmationPayload {
     pub status: ParameterSetStatus, // Status code
     pub value: CanDataValue,        // Confirmed value after set operation
 }
+#[derive(Specifier, Debug, Copy, Clone, PartialEq, Eq, Immutable, TryFromBytes, IntoBytes)]
+#[repr(u8)]
+pub enum FieldStatus {
+    Ok = 0,
+    NotFound = 1,
+}
 
 #[derive(Debug, Clone, ByteCodec, PartialEq)]
 pub struct FieldGetReqPayload {
@@ -80,8 +86,9 @@ pub struct FieldGetReqPayload {
 
 #[derive(Debug, Clone, ByteCodec, PartialEq)]
 pub struct FieldGetResPayload {
-    pub field_id: u8,    // Field identifier
-    pub value: CanDataValue, // Field value
+    pub field_id: u8,              // Field identifier
+    pub field_status: FieldStatus, // Status of the get operation
+    pub value: CanDataValue,           // Field value
 }
 
 #[derive(Debug, Clone, ByteCodec, PartialEq)]
@@ -92,8 +99,9 @@ pub struct FieldIDLookupReqPayload {
 // Important: only derives TryFromBytes because enum CanDataType doesn't cover all possible enum variants for u8
 #[derive(Debug, Clone, ByteCodec, PartialEq)]
 pub struct FieldIDLookupResPayload {
-    pub field_id: u8,            // Field ID
-    pub field_type: CanDataType, // Field Datatype
+    pub field_id: u8,              // Field ID
+    pub field_status: FieldStatus, // Status of the lookup operation
+    pub field_type: CanDataType,   // Field Datatype
 }
 
 // Important: only derives TryFromBytes because bool doesn't derive FromBytes
@@ -101,6 +109,14 @@ pub struct FieldIDLookupResPayload {
 pub struct ParameterSetLockPayload {
     pub parameter_id: u8,                    // Parameter identifier to lock
     pub parameter_lock: ParameterLockStatus, // Lock status (0=unlocked, 1=locked)
+}
+// Important: only derives TryFromBytes because bool doesn't derive FromBytes
+#[derive(Debug, Clone, TryFromBytes, IntoBytes, Immutable, PartialEq)]
+#[repr(C, packed)]
+pub struct ParameterSetLockConfirmationPayload {
+    pub parameter_id: u8,                    // Parameter identifier to lock
+    pub parameter_lock: ParameterLockStatus, // Lock status (0=unlocked, 1=locked)
+    pub field_status: FieldStatus,           // Status of the parameter
 }
 
 
@@ -113,7 +129,7 @@ static_assertions::const_assert_eq!(HeartbeatPayload::MAX_SERIALIZED_SIZE, 4);
 static_assertions::const_assert_eq!(ParameterSetReqPayload::MAX_SERIALIZED_SIZE, 5);
 static_assertions::const_assert_eq!(ParameterSetConfirmationPayload::MAX_SERIALIZED_SIZE, 6);
 static_assertions::const_assert_eq!(FieldGetReqPayload::MAX_SERIALIZED_SIZE, 1);
-static_assertions::const_assert_eq!(FieldGetResPayload::MAX_SERIALIZED_SIZE, 5);
+static_assertions::const_assert_eq!(FieldGetResPayload::MAX_SERIALIZED_SIZE, 6);
 static_assertions::const_assert_eq!(FieldIDLookupReqPayload::MAX_SERIALIZED_SIZE, 61);
-static_assertions::const_assert_eq!(FieldIDLookupResPayload::MAX_SERIALIZED_SIZE, 2);
+static_assertions::const_assert_eq!(FieldIDLookupResPayload::MAX_SERIALIZED_SIZE, 3);
 static_assertions::const_assert_eq!(ParameterSetLockPayload::MAX_SERIALIZED_SIZE, 2);
