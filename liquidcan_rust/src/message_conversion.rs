@@ -142,7 +142,7 @@ mod tests {
     fn test_telemetry_group_update() {
         let data_values = [
             payloads::CanDataValue::Int32(42),
-            payloads::CanDataValue::Float32(3.14),
+            payloads::CanDataValue::Float32(12.34),
             payloads::CanDataValue::Boolean(true),
         ];
         let payload = payloads::TelemetryGroupUpdatePayload {
