@@ -2,8 +2,9 @@ use liquidcan_rust_macros::byte_codec::ByteCodec;
 use modular_bitfield::Specifier;
 use zerocopy_derive::{Immutable, IntoBytes, TryFromBytes};
 
-pub use crate::can_data::{CanDataType, CanDataValue, CanString, NonNullCanBytes, PackedCanDataValues};
-
+pub use crate::can_data::{
+    CanDataType, CanDataValue, CanString, NonNullCanBytes, PackedCanDataValues,
+};
 
 #[derive(Specifier, Debug, Copy, Clone, PartialEq, Eq, Immutable, TryFromBytes, IntoBytes)]
 #[repr(u8)]
@@ -44,13 +45,13 @@ pub struct FieldRegistrationPayload {
 
 #[derive(Debug, Clone, ByteCodec, PartialEq)]
 pub struct TelemetryGroupDefinitionPayload {
-    pub group_id: u8,        // Unique identifier for this group
+    pub group_id: u8,                   // Unique identifier for this group
     pub field_ids: NonNullCanBytes<62>, // Array of field IDs in this group
 }
 
 #[derive(Debug, Clone, ByteCodec, PartialEq)]
 pub struct TelemetryGroupUpdatePayload {
-    pub group_id: u8,     // Group identifier
+    pub group_id: u8,                    // Group identifier
     pub values: PackedCanDataValues<62>, // Packed values of all telemetry values in the group
 }
 
@@ -61,8 +62,8 @@ pub struct HeartbeatPayload {
 
 #[derive(Debug, Clone, ByteCodec, PartialEq)]
 pub struct ParameterSetReqPayload {
-    pub parameter_id: u8, // Parameter identifier
-    pub value: CanDataValue,  // New value (type depends on parameter)
+    pub parameter_id: u8,    // Parameter identifier
+    pub value: CanDataValue, // New value (type depends on parameter)
 }
 
 // Important: only derives TryFromBytes because enum ParameterSetStatus doesn't cover all possible enum variants for u8
@@ -88,7 +89,7 @@ pub struct FieldGetReqPayload {
 pub struct FieldGetResPayload {
     pub field_id: u8,              // Field identifier
     pub field_status: FieldStatus, // Status of the get operation
-    pub value: CanDataValue,           // Field value
+    pub value: CanDataValue,       // Field value
 }
 
 #[derive(Debug, Clone, ByteCodec, PartialEq)]
@@ -100,8 +101,8 @@ pub struct FieldIDLookupReqPayload {
 #[derive(Debug, Clone, ByteCodec, PartialEq)]
 pub struct FieldIDLookupResPayload {
     pub field_id: u8,              // Field ID
-    pub field_status: FieldStatus, // Status of the lookup operation
     pub field_type: CanDataType,   // Field Datatype
+    pub field_status: FieldStatus, // Status of the lookup operation
 }
 
 // Important: only derives TryFromBytes because bool doesn't derive FromBytes
@@ -118,7 +119,6 @@ pub struct ParameterSetLockConfirmationPayload {
     pub parameter_lock: ParameterLockStatus, // Lock status (0=unlocked, 1=locked)
     pub field_status: FieldStatus,           // Status of the parameter
 }
-
 
 static_assertions::const_assert_eq!(NodeInfoResPayload::MAX_SERIALIZED_SIZE, 63);
 static_assertions::const_assert_eq!(StatusPayload::MAX_SERIALIZED_SIZE, 63);
