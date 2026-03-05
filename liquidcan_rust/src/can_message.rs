@@ -1,101 +1,78 @@
+use liquidcan_rust_macros::byte_codec::ByteCodec;
+
 use crate::payloads;
-use liquidcan_rust_macros::padded_enum;
-use liquidcan_rust_macros_derive::EnumDiscriminate;
 
-padded_enum! {
-
-(size = 64)
-
-#[derive(Debug, EnumDiscriminate, PartialEq, Clone)]
+#[derive(Debug, ByteCodec, PartialEq, Clone)]
 #[repr(u8)]
 pub enum CanMessage {
     // Node Discovery and Information
-    #[pad(63)]
     NodeInfoReq = 0, // NO payload
-    #[pad(0)]
     NodeInfoAnnouncement {
         payload: payloads::NodeInfoResPayload,
     } = 1,
 
     // Status Messages
-    #[pad(0)]
     InfoStatus {
-        payload: payloads::StatusPayload
+        payload: payloads::StatusPayload,
     } = 10,
-    #[pad(0)]
     WarningStatus {
-        payload: payloads::StatusPayload
+        payload: payloads::StatusPayload,
     } = 11,
-    #[pad(0)]
     ErrorStatus {
-       payload: payloads::StatusPayload
+        payload: payloads::StatusPayload,
     } = 12,
 
     // Field Registration
-    #[pad(0)]
     TelemetryValueRegistration {
         payload: payloads::FieldRegistrationPayload,
     } = 20,
-    #[pad(0)]
     ParameterRegistration {
         payload: payloads::FieldRegistrationPayload,
     } = 21,
 
     // Telemetry Group Management
-    #[pad(0)]
     TelemetryGroupDefinition {
         payload: payloads::TelemetryGroupDefinitionPayload,
     } = 30,
-    #[pad(0)]
     TelemetryGroupUpdate {
         payload: payloads::TelemetryGroupUpdatePayload,
     } = 31,
 
     // Heartbeat
-    #[pad(59)]
     HeartbeatReq {
-        payload: payloads::HeartbeatPayload
+        payload: payloads::HeartbeatPayload,
     } = 40,
-    #[pad(59)]
     HeartbeatRes {
-        payload: payloads::HeartbeatPayload
+        payload: payloads::HeartbeatPayload,
     } = 41,
 
     // Parameter Management
-    #[pad(1)]
     ParameterSetReq {
         payload: payloads::ParameterSetReqPayload,
     } = 50,
-    #[pad(0)]
     ParameterSetConfirmation {
         payload: payloads::ParameterSetConfirmationPayload,
     } = 51,
-    #[pad(61)]
     ParameterSetLockReq {
         payload: payloads::ParameterSetLockPayload,
     } = 52,
-    #[pad(60)]
     ParameterSetLockConfirmation {
         payload: payloads::ParameterSetLockConfirmationPayload,
     } = 53,
 
     // Field Access
-    #[pad(62)]
     FieldGetReq {
         payload: payloads::FieldGetReqPayload,
     } = 60,
-    #[pad(0)]
     FieldGetRes {
         payload: payloads::FieldGetResPayload,
     } = 61,
-    #[pad(2)]
     FieldIDLookupReq {
         payload: payloads::FieldIDLookupReqPayload,
     } = 62,
-    #[pad(60)]
     FieldIDLookupRes {
         payload: payloads::FieldIDLookupResPayload,
     } = 63,
 }
 
-}
+static_assertions::const_assert_eq!(CanMessage::MAX_SERIALIZED_SIZE, 64);

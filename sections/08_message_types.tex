@@ -30,7 +30,7 @@ The following message types are defined in the protocol:
 50 & \texttt{parameter\_set\_req}\label{msg:parameter-set-req} & ParameterSetReq (\ref{struct:ParameterSetReq}) & Server/Node $\rightarrow$ Node & Request to set a parameter value \\
 51 & \texttt{parameter\_set\_confirmation}\label{msg:parameter-set-confirmation} & ParameterSetConfirmation (\ref{struct:ParameterSetConfirmation}) & Node $\rightarrow$ Server/Node & Response with confirmed parameter value \\
 52 & \texttt{parameter\_set\_lock\_req}\label{msg:parameter-set-lock-req} & ParameterSetLock (\ref{struct:ParameterSetLock}) & Server/Node $\rightarrow$ Node & Request to lock a parameter \\
-53 & \texttt{parameter\_set\_lock\_confirmation}\label{msg:parameter-set-lock-res} & ParameterSetLock (\ref{struct:ParameterSetLock}) & Node $\rightarrow$ Server & Response confirming parameter lock \\
+53 & \texttt{parameter\_set\_lock\_confirmation}\label{msg:parameter-set-lock-res} & ParameterSetLockConfirmation (\ref{struct:ParameterSetLockConfirmation}) & Node $\rightarrow$ Server & Response confirming parameter lock \\
 \midrule
 \multicolumn{5}{l}{\textit{Field Access}} \\
 60 & \texttt{field\_get\_req}\label{msg:field-get-req} & FieldGetReq (\ref{struct:FieldGetReq}) & Server/Node $\rightarrow$ Node & Request field value \\

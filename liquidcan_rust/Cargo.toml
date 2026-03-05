@@ -11,3 +11,4 @@ zerocopy = "0.8.27"
 zerocopy-derive = "0.8.27"
 liquidcan_rust_macros = { path = "liquidcan_rust_macros" }
 liquidcan_rust_macros_derive = { path = "liquidcan_rust_macros/liquidcan_rust_macros_derive" }
+socketcan = "3.5.0"

@@ -1,47 +1,63 @@
-use crate::CanMessageFrame;
-use crate::can_message::{CanMessage, CanMessagePadded};
-use anyhow::anyhow;
-use zerocopy::{FromZeros, IntoBytes, TryFromBytes};
+use crate::can_message::CanMessage;
+use liquidcan_rust_macros::byte_codec::ByteCodec;
+use socketcan::EmbeddedFrame;
 
-impl TryFrom<CanMessageFrame> for CanMessage {
+impl TryFrom<socketcan::CanFdFrame> for CanMessage {
     type Error = anyhow::Error;
 
-    fn try_from(frame: CanMessageFrame) -> Result<Self, Self::Error> {
-        let frame_data = frame.as_bytes();
-        let padded_msg = CanMessagePadded::try_read_from_bytes(frame_data)
-            .map_err(|e| anyhow!("Failed to convert message: {}", e))?;
-        let msg: CanMessage = padded_msg.into();
-        Ok(msg)
+    fn try_from(frame: socketcan::CanFdFrame) -> Result<Self, Self::Error> {
+        let frame_data = frame.data();
+        let (message, _) = CanMessage::deserialize(frame_data)?;
+        Ok(message)
     }
 }
 
-impl From<CanMessage> for CanMessageFrame {
+impl From<CanMessage> for socketcan::CanFdFrame {
     fn from(msg: CanMessage) -> Self {
-        let mut msg_frame = CanMessageFrame::new_zeroed();
-        let discriminant = msg.discriminant();
-        let padded_msg: CanMessagePadded = msg.into();
-        // The first byte is the discriminant, which is set separately.
-        let bytes: &[u8] = &padded_msg.as_bytes()[1..];
-        msg_frame.data[..bytes.len()].copy_from_slice(bytes);
-        msg_frame.message_type = discriminant;
-        msg_frame
+        let mut buf = Vec::with_capacity(64);
+        msg.serialize(&mut buf);
+
+        // ID needs to be set at a later point
+        let id = socketcan::StandardId::ZERO;
+
+        socketcan::CanFdFrame::new(id, &buf).unwrap()
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::CanMessageFrame;
     use crate::can_message::CanMessage;
     use crate::payloads;
     use crate::payloads::FieldStatus;
-    use zerocopy::FromZeros;
+    use socketcan::EmbeddedFrame;
 
     fn test_round_trip(msg: CanMessage) {
-        let can_data: CanMessageFrame = msg.clone().into();
+        let can_data: socketcan::CanFdFrame = msg.clone().into();
         let msg_back: CanMessage = can_data
             .try_into()
             .expect("Failed to convert back to Command");
         assert_eq!(msg, msg_back);
+    }
+
+    fn test_round_trip_lossy(msg: CanMessage) {
+        let can_data: socketcan::CanFdFrame = msg.into();
+        let msg_back: CanMessage = can_data
+            .try_into()
+            .expect("Failed to convert back to Command");
+
+        // For payloads where type metadata is absent, decode is intentionally lossy.
+        // Assert canonical wire round-tripping instead of strict AST equality.
+        let can_data_back: socketcan::CanFdFrame = msg_back.clone().into();
+        assert_eq!(
+            can_data.data(),
+            can_data_back.data(),
+            "encoded bytes must be stable after one decode/encode cycle"
+        );
+
+        let msg_back_again: CanMessage = can_data_back
+            .try_into()
+            .expect("Failed to convert canonical bytes back to Command");
+        assert_eq!(msg_back, msg_back_again);
     }
 
     #[test]
@@ -57,7 +73,7 @@ mod tests {
             par_count: 5,
             firmware_hash: 1234,
             liquid_hash: 5678,
-            device_name: [0xAA; 53],
+            device_name: "Test".try_into().unwrap(),
         };
         let msg = CanMessage::NodeInfoAnnouncement { payload };
         test_round_trip(msg);
@@ -65,21 +81,27 @@ mod tests {
 
     #[test]
     fn test_info_status() {
-        let payload = payloads::StatusPayload { msg: [0xBB; 63] };
+        let payload = payloads::StatusPayload {
+            msg: "Info status message".try_into().unwrap(),
+        };
         let msg = CanMessage::InfoStatus { payload };
         test_round_trip(msg);
     }
 
     #[test]
     fn test_warning_status() {
-        let payload = payloads::StatusPayload { msg: [0xCC; 63] };
+        let payload = payloads::StatusPayload {
+            msg: "Warning status message".try_into().unwrap(),
+        };
         let msg = CanMessage::WarningStatus { payload };
         test_round_trip(msg);
     }
 
     #[test]
     fn test_error_status() {
-        let payload = payloads::StatusPayload { msg: [0xDD; 63] };
+        let payload = payloads::StatusPayload {
+            msg: "Error status message".try_into().unwrap(),
+        };
         let msg = CanMessage::ErrorStatus { payload };
         test_round_trip(msg);
     }
@@ -89,7 +111,7 @@ mod tests {
         let payload = payloads::FieldRegistrationPayload {
             field_id: 5,
             field_type: payloads::CanDataType::UInt16,
-            field_name: [0xEE; 61],
+            field_name: "Telemetry Value Field".try_into().unwrap(),
         };
         let msg = CanMessage::TelemetryValueRegistration { payload };
         test_round_trip(msg);
@@ -100,7 +122,7 @@ mod tests {
         let payload = payloads::FieldRegistrationPayload {
             field_id: 7,
             field_type: payloads::CanDataType::Boolean,
-            field_name: [0xFF; 61],
+            field_name: "Parameter Field".try_into().unwrap(),
         };
         let msg = CanMessage::ParameterRegistration { payload };
         test_round_trip(msg);
@@ -110,7 +132,7 @@ mod tests {
     fn test_telemetry_group_definition() {
         let payload = payloads::TelemetryGroupDefinitionPayload {
             group_id: 3,
-            field_ids: [0xFA; 62],
+            field_ids: [0xFA; 62].as_slice().try_into().unwrap(),
         };
         let msg = CanMessage::TelemetryGroupDefinition { payload };
         test_round_trip(msg);
@@ -118,12 +140,17 @@ mod tests {
 
     #[test]
     fn test_telemetry_group_update() {
+        let data_values = [
+            payloads::CanDataValue::Int32(42),
+            payloads::CanDataValue::Float32(12.34),
+            payloads::CanDataValue::Boolean(true),
+        ];
         let payload = payloads::TelemetryGroupUpdatePayload {
             group_id: 4,
-            values: [0xFB; 62],
+            values: data_values.as_slice().try_into().unwrap(),
         };
         let msg = CanMessage::TelemetryGroupUpdate { payload };
-        test_round_trip(msg);
+        test_round_trip_lossy(msg);
     }
 
     #[test]
@@ -144,10 +171,10 @@ mod tests {
     fn test_parameter_set_req() {
         let payload = payloads::ParameterSetReqPayload {
             parameter_id: 10,
-            value: [0xAA; 61],
+            value: payloads::CanDataValue::Int32(67),
         };
         let msg = CanMessage::ParameterSetReq { payload };
-        test_round_trip(msg);
+        test_round_trip_lossy(msg);
     }
 
     #[test]
@@ -155,10 +182,10 @@ mod tests {
         let payload = payloads::ParameterSetConfirmationPayload {
             parameter_id: 11,
             status: payloads::ParameterSetStatus::Success,
-            value: [0xBB; 61],
+            value: payloads::CanDataValue::Float32(42.0),
         };
         let msg = CanMessage::ParameterSetConfirmation { payload };
-        test_round_trip(msg);
+        test_round_trip_lossy(msg);
     }
 
     #[test]
@@ -194,16 +221,16 @@ mod tests {
         let payload = payloads::FieldGetResPayload {
             field_id: 21,
             field_status: FieldStatus::Ok,
-            value: [0xCC; 61],
+            value: payloads::CanDataValue::Boolean(true),
         };
         let msg = CanMessage::FieldGetRes { payload };
-        test_round_trip(msg);
+        test_round_trip_lossy(msg);
     }
 
     #[test]
     fn test_field_id_lookup_req() {
         let payload = payloads::FieldIDLookupReqPayload {
-            field_name: [0xDD; 61],
+            field_name: "Test Field Name".try_into().unwrap(),
         };
         let msg = CanMessage::FieldIDLookupReq { payload };
         test_round_trip(msg);
@@ -213,8 +240,8 @@ mod tests {
     fn test_field_id_lookup_res() {
         let payload = payloads::FieldIDLookupResPayload {
             field_id: 22,
-            field_status: FieldStatus::Ok,
             field_type: payloads::CanDataType::Float32,
+            field_status: FieldStatus::Ok,
         };
         let msg = CanMessage::FieldIDLookupRes { payload };
         test_round_trip(msg);
@@ -223,14 +250,13 @@ mod tests {
     #[test]
     fn test_invalid_message_type() {
         // Create a frame with an invalid message type (255 is not defined)
-        let mut frame = CanMessageFrame::new_zeroed();
-        frame.message_type = 255;
+        let frame = socketcan::CanFdFrame::new(socketcan::StandardId::ZERO, &[255]).unwrap();
 
         let result: Result<CanMessage, _> = frame.try_into();
         assert!(result.is_err(), "Expected error for invalid message type");
         let err_msg = result.unwrap_err().to_string();
         assert!(
-            err_msg.contains("Failed to convert message"),
+            err_msg.contains("invalid enum discriminant"),
             "Error message should mention conversion failure: {}",
             err_msg
         );
@@ -239,11 +265,16 @@ mod tests {
     #[test]
     fn test_invalid_can_data_type() {
         // Create a FieldRegistration with invalid CanDataType (255 is out of range)
-        let mut frame = CanMessageFrame::new_zeroed();
-        frame.message_type = 20; // TelemetryValueRegistration
-        frame.data[0] = 5; // field_id
-        frame.data[1] = 255; // Invalid CanDataType
-        // Rest is field_name
+        let frame = socketcan::CanFdFrame::new(
+            socketcan::StandardId::ZERO,
+            &[
+                20, // TelemetryValueRegistration
+                5,  // field_id
+                255, // Invalid CanDataType
+                    // Rest is field_name
+            ],
+        )
+        .unwrap();
 
         let result: Result<CanMessage, _> = frame.try_into();
         assert!(result.is_err(), "Expected error for invalid CanDataType");
@@ -252,10 +283,15 @@ mod tests {
     #[test]
     fn test_invalid_parameter_set_status() {
         // Create a ParameterSetConfirmation with invalid status
-        let mut frame = CanMessageFrame::new_zeroed();
-        frame.message_type = 51; // ParameterSetConfirmation
-        frame.data[0] = 10; // parameter_id
-        frame.data[1] = 255; // Invalid ParameterSetStatus
+        let frame = socketcan::CanFdFrame::new(
+            socketcan::StandardId::ZERO,
+            &[
+                51,  // ParameterSetConfirmation
+                10,  // parameter_id
+                255, // Invalid ParameterSetStatus
+            ],
+        )
+        .unwrap();
         // Rest is value
 
         let result: Result<CanMessage, _> = frame.try_into();
@@ -268,10 +304,15 @@ mod tests {
     #[test]
     fn test_invalid_parameter_lock_status() {
         // Create a ParameterSetLockReq with invalid lock status
-        let mut frame = CanMessageFrame::new_zeroed();
-        frame.message_type = 52; // ParameterSetLockReq
-        frame.data[0] = 12; // parameter_id
-        frame.data[1] = 255; // Invalid ParameterLockStatus
+        let frame = socketcan::CanFdFrame::new(
+            socketcan::StandardId::ZERO,
+            &[
+                52,  // ParameterSetLockReq
+                12,  // parameter_id
+                255, // Invalid ParameterLockStatus
+            ],
+        )
+        .unwrap();
 
         let result: Result<CanMessage, _> = frame.try_into();
         assert!(
