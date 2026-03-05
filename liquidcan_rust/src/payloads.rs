@@ -133,3 +133,7 @@ static_assertions::const_assert_eq!(FieldGetResPayload::MAX_SERIALIZED_SIZE, 6);
 static_assertions::const_assert_eq!(FieldIDLookupReqPayload::MAX_SERIALIZED_SIZE, 61);
 static_assertions::const_assert_eq!(FieldIDLookupResPayload::MAX_SERIALIZED_SIZE, 3);
 static_assertions::const_assert_eq!(ParameterSetLockPayload::MAX_SERIALIZED_SIZE, 2);
+static_assertions::const_assert_eq!(FieldStatus::MAX_SERIALIZED_SIZE, 1);
+static_assertions::const_assert_eq!(CanDataType::MAX_SERIALIZED_SIZE, 1);
+static_assertions::const_assert_eq!(ParameterSetStatus::MAX_SERIALIZED_SIZE, 1);
+static_assertions::const_assert_eq!(ParameterLockStatus::MAX_SERIALIZED_SIZE, 1);
