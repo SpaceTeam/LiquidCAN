@@ -107,6 +107,17 @@ impl CanDataValue {
     }
 }
 
+/// # Variable-length serialization
+///
+/// `CanDataValue` serializes to 1–4 bytes depending on the variant.
+/// During deserialization the concrete type is not known, so `deserialize`
+/// consumes **all remaining input** into a [`Raw`](CanDataValue::Raw) variant.
+/// Use [`convert_from_raw`](CanDataValue::convert_from_raw) to reinterpret
+/// the raw bytes once the expected type is known.
+///
+/// **Because deserialization is greedy, `CanDataValue` must be the last field
+/// in any `ByteCodec` struct.** Placing it before other fields will prevent
+/// a clean round-trip.
 impl ByteCodec for CanDataValue {
     const MAX_SERIALIZED_SIZE: usize = 4;
 
@@ -155,38 +166,47 @@ impl ByteCodec for CanDataValue {
     }
 }
 
-/// Custom string type for CAN messages, fixed size of N bytes,
+/// Custom string type for CAN messages, with a maximum buffer of N bytes,
 /// null terminated (i.e. at most N-1 non-null bytes), ascii-only.
+///
+/// # Variable-length serialization
+///
+/// Only the characters up to and including the null terminator are serialized,
+/// so the wire size is `len + 1` rather than `N`.
+/// Because the null byte acts as an unambiguous delimiter, `CanString` may
+/// safely appear at any position in a `ByteCodec` struct (not just the end).
 #[derive(Debug, Clone)]
 pub struct CanString<const N: usize> {
     data: [u8; N],
 }
 
-impl<const N: usize> From<[u8; N]> for CanString<N> {
-    fn from(data: [u8; N]) -> Self {
-        // Ensure the string is null-terminated
-        assert!(
-            data.iter().position(|&b| b == 0).is_some(),
-            "CanString must be null-terminated."
-        );
-        // Ensure all characters are ASCII
-        assert!(
-            data.iter().all(|&b| b.is_ascii()),
-            "CanString must contain only ASCII characters."
-        );
-        CanString { data }
+impl<const N: usize> TryFrom<[u8; N]> for CanString<N> {
+    type Error = String;
+
+    fn try_from(data: [u8; N]) -> Result<Self, Self::Error> {
+        if data.iter().position(|&b| b == 0).is_none() {
+            return Err("CanString must be null-terminated.".to_string());
+        }
+        if !data.iter().all(|&b| b.is_ascii()) {
+            return Err("CanString must contain only ASCII characters.".to_string());
+        }
+        Ok(CanString { data })
     }
 }
 
-impl<const N: usize> From<&str> for CanString<N> {
-    fn from(s: &str) -> Self {
+impl<const N: usize> TryFrom<&str> for CanString<N> {
+    type Error = String;
+
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
         let bytes = s.as_bytes();
-        assert!(bytes.len() < N, "String too long for CanString<{}>", N);
+        if bytes.len() >= N {
+            return Err(format!("String too long for CanString<{}>", N));
+        }
 
         let mut data = [0u8; N];
         data[..bytes.len()].copy_from_slice(bytes);
 
-        data.into()
+        data.try_into()
     }
 }
 
@@ -219,7 +239,10 @@ impl<const N: usize> ByteCodec for CanString<N> {
                 let mut data = [0u8; N];
                 data[..pos].copy_from_slice(&input[..pos]);
 
-                Ok((data.into(), &input[pos + 1..]))
+                let s: CanString<N> = data
+                    .try_into()
+                    .map_err(|e: String| DeserializationError::InvalidData(e))?;
+                Ok((s, &input[pos + 1..]))
             } else {
                 Err(DeserializationError::InvalidData(format!(
                     "CanString exceeds maximum length of {}",
@@ -236,6 +259,14 @@ impl<const N: usize> ByteCodec for CanString<N> {
 
 /// Represents a packed set of CAN data values.
 /// The raw byte form must fit into N bytes.
+///
+/// # Variable-length serialization
+///
+/// Only the bytes that were actually packed are serialized (i.e. the wire
+/// size equals the sum of the sizes of the contained values, not `N`).
+/// Deserialization consumes up to `N` bytes from the remaining input, so
+/// **this type must be the last field** in any `ByteCodec` struct to
+/// round-trip correctly.
 #[derive(Clone, Debug, PartialEq)]
 pub struct PackedCanDataValues<const N: usize> {
     data: Vec<u8>,
@@ -244,13 +275,16 @@ pub struct PackedCanDataValues<const N: usize> {
 impl<const N: usize> PackedCanDataValues<N> {
     /// Unpack the raw byte data into a vector of CanDataValue based on the provided data types.
     /// The caller must ensure that the order and types of the data match what was originally packed.
-    pub fn unpack(&self, data_types: &[CanDataType]) -> Result<Vec<CanDataValue>, DeserializationError> {
+    pub fn unpack(
+        &self,
+        data_types: &[CanDataType],
+    ) -> Result<Vec<CanDataValue>, DeserializationError> {
         let mut values = Vec::new();
         let mut offset = 0;
 
         for &data_type in data_types {
             let size = data_type.get_size();
-            if offset + size > N {
+            if offset + size > self.data.len() {
                 return Err(DeserializationError::InvalidData(format!(
                     "Not enough data to unpack CanDataValue of type {:?}",
                     data_type
@@ -300,9 +334,14 @@ impl<const N: usize> ByteCodec for PackedCanDataValues<N> {
     }
 }
 
-
-
 /// Up to N bytes that do not include a null byte.
+///
+/// # Variable-length serialization
+///
+/// Only the meaningful (non-zero) prefix is serialized.
+/// Deserialization reads until a null byte or end of input (up to `N` bytes),
+/// so **this type must be the last field** in any `ByteCodec` struct to
+/// round-trip correctly.
 #[derive(Debug, Clone)]
 pub struct NonNullCanBytes<const N: usize> {
     data: [u8; N],

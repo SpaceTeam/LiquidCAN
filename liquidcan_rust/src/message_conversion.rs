@@ -28,8 +28,8 @@ impl From<CanMessage> for socketcan::CanFdFrame {
 mod tests {
     use crate::can_message::CanMessage;
     use crate::payloads;
-    use socketcan::EmbeddedFrame;
     use crate::payloads::FieldStatus;
+    use socketcan::EmbeddedFrame;
 
     fn test_round_trip(msg: CanMessage) {
         let can_data: socketcan::CanFdFrame = msg.clone().into();
@@ -73,7 +73,7 @@ mod tests {
             par_count: 5,
             firmware_hash: 1234,
             liquid_hash: 5678,
-            device_name: "Test".into(),
+            device_name: "Test".try_into().unwrap(),
         };
         let msg = CanMessage::NodeInfoAnnouncement { payload };
         test_round_trip(msg);
@@ -82,7 +82,7 @@ mod tests {
     #[test]
     fn test_info_status() {
         let payload = payloads::StatusPayload {
-            msg: "Info status message".into(),
+            msg: "Info status message".try_into().unwrap(),
         };
         let msg = CanMessage::InfoStatus { payload };
         test_round_trip(msg);
@@ -91,7 +91,7 @@ mod tests {
     #[test]
     fn test_warning_status() {
         let payload = payloads::StatusPayload {
-            msg: "Warning status message".into(),
+            msg: "Warning status message".try_into().unwrap(),
         };
         let msg = CanMessage::WarningStatus { payload };
         test_round_trip(msg);
@@ -100,7 +100,7 @@ mod tests {
     #[test]
     fn test_error_status() {
         let payload = payloads::StatusPayload {
-            msg: "Error status message".into(),
+            msg: "Error status message".try_into().unwrap(),
         };
         let msg = CanMessage::ErrorStatus { payload };
         test_round_trip(msg);
@@ -111,7 +111,7 @@ mod tests {
         let payload = payloads::FieldRegistrationPayload {
             field_id: 5,
             field_type: payloads::CanDataType::UInt16,
-            field_name: "Telemetry Value Field".into(),
+            field_name: "Telemetry Value Field".try_into().unwrap(),
         };
         let msg = CanMessage::TelemetryValueRegistration { payload };
         test_round_trip(msg);
@@ -122,7 +122,7 @@ mod tests {
         let payload = payloads::FieldRegistrationPayload {
             field_id: 7,
             field_type: payloads::CanDataType::Boolean,
-            field_name: "Parameter Field".into(),
+            field_name: "Parameter Field".try_into().unwrap(),
         };
         let msg = CanMessage::ParameterRegistration { payload };
         test_round_trip(msg);
@@ -230,7 +230,7 @@ mod tests {
     #[test]
     fn test_field_id_lookup_req() {
         let payload = payloads::FieldIDLookupReqPayload {
-            field_name: "Test Field Name".into(),
+            field_name: "Test Field Name".try_into().unwrap(),
         };
         let msg = CanMessage::FieldIDLookupReq { payload };
         test_round_trip(msg);
@@ -240,8 +240,8 @@ mod tests {
     fn test_field_id_lookup_res() {
         let payload = payloads::FieldIDLookupResPayload {
             field_id: 22,
-            field_status: FieldStatus::Ok,
             field_type: payloads::CanDataType::Float32,
+            field_status: FieldStatus::Ok,
         };
         let msg = CanMessage::FieldIDLookupRes { payload };
         test_round_trip(msg);
