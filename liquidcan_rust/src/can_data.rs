@@ -149,7 +149,7 @@ impl ByteCodec for CanDataValue {
                 out.push(*v as u8);
             }
             CanDataValue::Raw(data) => {
-                out.extend_from_slice(&data);
+                out.extend_from_slice(data);
             }
         }
     }
@@ -184,7 +184,7 @@ impl<const N: usize> TryFrom<[u8; N]> for CanString<N> {
     type Error = String;
 
     fn try_from(data: [u8; N]) -> Result<Self, Self::Error> {
-        if data.iter().position(|&b| b == 0).is_none() {
+        if !data.contains(&0) {
             return Err("CanString must be null-terminated.".to_string());
         }
         if !data.iter().all(|&b| b.is_ascii()) {
@@ -358,7 +358,7 @@ impl<const N: usize> TryFrom<&[u8]> for NonNullCanBytes<N> {
                 N
             ));
         }
-        if value.iter().any(|&b| b == 0) {
+        if value.contains(&0) {
             return Err("Input data contains null byte".to_string());
         }
         let mut data = [0u8; N];
