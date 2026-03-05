@@ -49,7 +49,7 @@ impl CanDataValue {
         data: &[u8],
         data_type: CanDataType,
     ) -> Result<Self, DeserializationError> {
-        if data.len() != data_type.get_size() {
+        if data.len() < data_type.get_size() {
             return Err(DeserializationError::InvalidData(format!(
                 "Data length {} does not match expected length {} for type {:?}",
                 data.len(),
@@ -57,6 +57,8 @@ impl CanDataValue {
                 data_type
             )));
         }
+
+        let data = &data[..data_type.get_size()];
 
         match data_type {
             CanDataType::Float32 => {
