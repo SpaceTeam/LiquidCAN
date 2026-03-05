@@ -1,7 +1,8 @@
 \section{Common Frame Layout}\label{sec:frame-layout}
 \paragraph{}
-The CAN data field consists of 64 bytes.
-The first byte of each message contains the message type. 
+The CAN data field is variable-length, up to a maximum of 64 bytes.
+The first byte of each message contains the message type.
+The remaining bytes carry the payload, whose length depends on the message type.
 This simple format allows the protocol to be extended in the future by adding more message types.
 See Section \ref{sec:message-types} for a detailed description of message types and their numeric values.
 
@@ -11,7 +12,14 @@ See Section \ref{sec:message-types} for a detailed description of message types 
 Field & Bytes & Description \\
 \midrule
 message\_type & 1 & Type of message (see Message Types) \\
-data & 63 & Payload data \\
+data & 0--63 & Payload data (length depends on message type) \\
 \bottomrule
 \end{tabular}
 \end{center}
+
+\textbf{Note:} Each message type defines its own payload size. Message types that
+contain only fixed-size fields have a constant wire size, while those that end
+with a variable-length field (e.g.\ null-terminated strings or packed data
+arrays) may use fewer bytes than the maximum. Should the payload not fit exactly into
+one of the CAN FD data field sizes (1-8, 12, 16, 20, 24, 32, 48, or 64 bytes),
+it should be padded with zeros to the next valid size.

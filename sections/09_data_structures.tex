@@ -59,9 +59,9 @@ tel\_cnt & 1 & Number of telemetryValues on this node \\
 par\_cnt & 1 & Number of parameters on this node \\
 firmware\_hash & 4 & Hash of the firmware version \\
 liquid\_hash & 4 & Hash of the LiquidCan protocol version \\
-device\_name & 53 & Human-readable device name \\
+device\_name & $\leq$53 & Human-readable device name (null-terminated) \\
 \midrule
-\textbf{Total} & \textbf{63} & \\
+\textbf{Total} & \textbf{11--63} & \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -86,7 +86,7 @@ General status message with text information.
 \toprule
 Field & Bytes & Description \\
 \midrule
-msg & 63 & Status message text \\
+msg & $\leq$63 & Status message text (null-terminated) \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -110,9 +110,9 @@ Field & Bytes & Description \\
 \midrule
 field\_id & 1 & Unique identifier for this field \\
 field\_type & 1 & Data type (DataType enum) \\
-field\_name & 61 & Human-readable field name \\
+field\_name & $\leq$61 & Human-readable field name (null-terminated) \\
 \midrule
-\textbf{Total} & \textbf{63} & \\
+\textbf{Total} & \textbf{3--63} & \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -134,9 +134,9 @@ Defines a group of related telemetryValues for efficient batch updates.
 Field & Bytes & Description \\
 \midrule
 group\_id & 1 & Unique identifier for this group \\
-field\_ids & 62 & Array of field IDs in this group \\
+field\_ids & $\leq$62 & Array of field IDs in this group (terminated by end of frame) \\
 \midrule
-\textbf{Total} & \textbf{63} & \\
+\textbf{Total} & \textbf{2--63} & \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -157,9 +157,9 @@ Updates all telemetryValues from a previously defined group.
 Field & Bytes & Description \\
 \midrule
 group\_id & 1 & Group identifier \\
-values & 62 & Packed values of all telemetry values in the group \\
+values & $\leq$62 & Packed values of all telemetry values in the group \\
 \midrule
-\textbf{Total} & \textbf{63} & \\
+\textbf{Total} & \textbf{2--63} & \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -205,9 +205,9 @@ Request to set a parameter value.
 Field & Bytes & Description \\
 \midrule
 parameter\_id & 1 & Parameter identifier \\
-value & 61 & New value (type depends on parameter) \\
+value & 1--4 & New value (size depends on parameter datatype) \\
 \midrule
-\textbf{Total} & \textbf{62} & \\
+\textbf{Total} & \textbf{2--5} & \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -215,7 +215,7 @@ value & 61 & New value (type depends on parameter) \\
 \begin{lstlisting}[caption={ParameterSetReq struct}]
 typedef struct __attribute__((packed)) {
     uint8_t parameter_id;
-    uint8_t value[61];
+    uint8_t value[]; // 1-4 bytes, flexible array member
 } parameter_set_req_t;
 \end{lstlisting}
 
@@ -257,9 +257,9 @@ Field & Bytes & Description \\
 \midrule
 parameter\_id & 1 & Parameter identifier \\
 status & 1 & Status code (ParameterSetStatus enum) \\
-value & 61 & Confirmed value after set operation \\
+value & 1--4 & Confirmed value after set operation (size depends on datatype) \\
 \midrule
-\textbf{Total} & \textbf{63} & \\
+\textbf{Total} & \textbf{3--6} & \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -271,7 +271,7 @@ value & 61 & Confirmed value after set operation \\
 typedef struct __attribute__((packed)) {
     uint8_t parameter_id;
     uint8_t status;
-    uint8_t value[61];
+    uint8_t value[]; // 1-4 bytes, flexible array member
 } parameter_set_confirmation_t;
 \end{lstlisting}
 
@@ -305,9 +305,9 @@ Field & Bytes & Description \\
 \midrule
 field\_id & 1 & Field identifier \\
 field\_status & 1 & Field existence status (FieldStatus enum) \\
-value & 61 & Field value \\
+value & 1--4 & Field value (size depends on field datatype) \\
 \midrule
-\textbf{Total} & \textbf{63} & \\
+\textbf{Total} & \textbf{3--6} & \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -320,7 +320,7 @@ value & 61 & Field value \\
 typedef struct __attribute__((packed)) {
     uint8_t field_id;
     uint8_t field_status;
-    uint8_t value[61];
+    uint8_t value[]; // 1-4 bytes, flexible array member
 } field_get_res_t;
 \end{lstlisting}
 
@@ -333,9 +333,9 @@ Requsts the fieldID of a field matching a field name
 \toprule
 Field & Bytes & Description \\
 \midrule
-field\_name & 61 & Field Name \\
+field\_name & $\leq$61 & Field Name (null-terminated) \\
 \midrule
-\textbf{Total} & \textbf{61} & \\
+\textbf{Total} & \textbf{2--61} & \\
 \bottomrule
 \end{tabular}
 \end{center}
