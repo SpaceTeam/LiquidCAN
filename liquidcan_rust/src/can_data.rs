@@ -182,6 +182,13 @@ pub struct CanString<const N: usize> {
     data: [u8; N],
 }
 
+impl<const N: usize> From<CanString<N>> for String {
+    fn from(value: CanString<N>) -> Self {
+        let len = value.data.iter().position(|&b| b == 0).unwrap_or(N);
+        String::from_utf8_lossy(&value.data[..len]).to_string()
+    }
+}
+
 impl<const N: usize> TryFrom<[u8; N]> for CanString<N> {
     type Error = String;
 
