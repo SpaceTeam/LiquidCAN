@@ -182,6 +182,13 @@ pub struct CanString<const N: usize> {
     data: [u8; N],
 }
 
+impl<const N: usize> From<CanString<N>> for String {
+    fn from(value: CanString<N>) -> Self {
+        let len = value.data.iter().position(|&b| b == 0).unwrap_or(N);
+        String::from_utf8_lossy(&value.data[..len]).to_string()
+    }
+}
+
 impl<const N: usize> TryFrom<[u8; N]> for CanString<N> {
     type Error = String;
 
@@ -275,17 +282,19 @@ pub struct PackedCanDataValues<const N: usize> {
 }
 
 impl<const N: usize> PackedCanDataValues<N> {
-    /// Unpack the raw byte data into a vector of CanDataValue based on the provided data types.
-    /// The caller must ensure that the order and types of the data match what was originally packed.
-    pub fn unpack(
-        &self,
-        data_types: &[CanDataType],
-    ) -> Result<Vec<CanDataValue>, DeserializationError> {
-        let mut values = Vec::new();
+    /// Unpack the raw byte data lazily based on the provided data types.
+    /// Returns an iterator that yields Results. The caller must ensure
+    /// that the order and types of the data match what was originally packed.
+    pub fn unpack<'a>(
+        &'a self,
+        data_types: impl Iterator<Item = CanDataType> + 'a,
+    ) -> impl Iterator<Item = Result<CanDataValue, DeserializationError>> + 'a {
         let mut offset = 0;
 
-        for &data_type in data_types {
+        // We use `map` with a `move` closure to capture `self` and `offset`
+        data_types.map(move |data_type| {
             let size = data_type.get_size();
+
             if offset + size > self.data.len() {
                 return Err(DeserializationError::InvalidData(format!(
                     "Not enough data to unpack CanDataValue of type {:?}",
@@ -294,12 +303,13 @@ impl<const N: usize> PackedCanDataValues<N> {
             }
 
             let slice = &self.data[offset..offset + size];
-            let value = CanDataValue::convert_from_slice(slice, data_type)?;
-            values.push(value);
-            offset += size;
-        }
 
-        Ok(values)
+            let value = CanDataValue::convert_from_slice(slice, data_type)?;
+
+            offset += size;
+
+            Ok(value)
+        })
     }
 }
 
