@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-struct ParameterSetReq
+struct __attribute__((packed)) ParameterSetReq
 {
 	uint8_t parameterId;
 	uint8_t value[61];

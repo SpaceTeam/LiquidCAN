@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-struct FieldRegistration
+struct __attribute__((packed)) FieldRegistration
 {
 	uint8_t fieldId;
 	uint8_t fieldType;

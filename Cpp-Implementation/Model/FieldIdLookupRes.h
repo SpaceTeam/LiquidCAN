@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <../Infrastructure/DataType.h>
 
-struct FieldIdLookupRes
+struct __attribute__((packed)) FieldIdLookupRes
 {
 	uint8_t fieldId;
 	DataType fieldType;

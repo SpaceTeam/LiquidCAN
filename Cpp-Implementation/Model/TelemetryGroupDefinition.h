@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-struct TelemetryGroupDefinition
+struct __attribute__((packed)) TelemetryGroupDefinition
 {
 	uint8_t groupId;
 	uint8_t fieldIds[62];

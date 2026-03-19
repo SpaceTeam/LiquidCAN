@@ -32,9 +32,9 @@ def change_case(value, value_type):
     return value
 
 
-def add_cpp_preprocessor_directives(code_string, name, enum_includes=None):
-    new_code_string = f"#ifndef {name.upper()}_H\n"
-    new_code_string += f"#define {name.upper()}_H\n\n"
+def add_cpp_preprocessor_directives(code_string, element_name, enum_includes=None):
+    new_code_string = f"#ifndef {element_name.upper()}_H\n"
+    new_code_string += f"#define {element_name.upper()}_H\n\n"
     new_code_string += "#include <cstdint>\n"
 
     if enum_includes:
@@ -48,14 +48,14 @@ def add_cpp_preprocessor_directives(code_string, name, enum_includes=None):
     return new_code_string
 
 
-def create_enum(name, fields, data_type=None):
+def create_enum(element_name, fields, data_type=None):
     global default_types
-    name = change_case(name, "type")
-    code = f"enum {name}"
+    element_name = change_case(element_name, "type")
+    code = f"enum {element_name}"
 
     if data_type is not None:
         if not data_type in default_types:
-            raise Exception(f"Invalid data type: {data_type} in enum: {name}")
+            raise Exception(f"Invalid data type: {data_type} in enum: {element_name}")
         code += f" : {default_types[data_type]["conversion"]["cpp"]}\n"
     else:
         code += "\n"
@@ -69,20 +69,20 @@ def create_enum(name, fields, data_type=None):
             has_value = True
             code += f" = {element["value"]}"
         elif has_value:
-            raise Exception(f"not every value in {name} has a value!")
+            raise Exception(f"not every value in {element_name} has a value!")
 
         code += ",\n"
     code += "}\n"
-    return add_cpp_preprocessor_directives(code, name)
+    return add_cpp_preprocessor_directives(code, element_name)
 
 
-def create_struct(name, fields):
+def create_struct(element_name, fields):
     global default_types, enum_types
 
     inf_files = []
 
-    name = change_case(name, "type")
-    code = f"struct {name}\n"
+    element_name = change_case(element_name, "type")
+    code = f"struct __attribute__((packed)) {element_name}\n"
     code += "{\n"
 
     required_types = []
@@ -102,7 +102,7 @@ def create_struct(name, fields):
             code += f"[{element["length"]}]"
         code += ";\n"
     code += "}\n"
-    return add_cpp_preprocessor_directives(code, name, inf_files), required_types
+    return add_cpp_preprocessor_directives(code, element_name, inf_files), required_types
 
 
 def prepare_write(path):

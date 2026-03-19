@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-struct ParameterSetLock
+struct __attribute__((packed)) ParameterSetLock
 {
 	uint8_t parameterId;
 	uint8_t lockStatus;

@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <../Infrastructure/ParameterSetStatus.h>
 
-struct ParameterSetConfirmation
+struct __attribute__((packed)) ParameterSetConfirmation
 {
 	uint8_t parameterId;
 	ParameterSetStatus status;

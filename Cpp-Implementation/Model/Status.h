@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-struct Status
+struct __attribute__((packed)) Status
 {
 	int8_t msg[63];
 }

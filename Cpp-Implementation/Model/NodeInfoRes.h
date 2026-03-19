@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-struct NodeInfoRes
+struct __attribute__((packed)) NodeInfoRes
 {
 	uint8_t telCnt;
 	uint8_t parCnt;

@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-struct FieldIdLookupReq
+struct __attribute__((packed)) FieldIdLookupReq
 {
 	uint8_t fieldName[61];
 }

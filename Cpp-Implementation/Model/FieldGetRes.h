@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-struct FieldGetRes
+struct __attribute__((packed)) FieldGetRes
 {
 	uint8_t fieldId;
 	uint8_t value[62];

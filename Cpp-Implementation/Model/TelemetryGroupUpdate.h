@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-struct TelemetryGroupUpdate
+struct __attribute__((packed)) TelemetryGroupUpdate
 {
 	uint8_t groupId;
 	uint8_t values[62];

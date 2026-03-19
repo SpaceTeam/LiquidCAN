@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-struct HeartBeat
+struct __attribute__((packed)) HeartBeat
 {
 	uint32_t counter;
 }
