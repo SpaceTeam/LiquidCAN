@@ -135,7 +135,7 @@ if "enum" in data.keys():
         if "type" in enum.keys():
             cpp_enum = create_enum(name, enum["values"], enum["type"])
         else:
-            cpp_enum = data = create_enum(name, enum["values"])
+            cpp_enum = create_enum(name, enum["values"])
 
         type_set.add(name)
         cpp_enum_code.append((name, cpp_enum))
