@@ -7,6 +7,11 @@ pub enum CanMessagePriority {
     High = 1,
 }
 
+/// Reserved Node IDs with special meaning.
+pub const NODE_ID_INVALID: u8 = 0;
+pub const NODE_ID_SERVER: u8 = 1;
+pub const NODE_ID_BROADCAST: u8 = 31;
+
 #[bitfield]
 #[derive(Debug, Copy, Clone, PartialEq)]
 #[repr(u16)]

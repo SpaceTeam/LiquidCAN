@@ -1,5 +1,5 @@
 \section{CAN Identifier Scheme \& NodeID}\label{sec:can-id-scheme}
-Each device on the bus has its own unique Node ID. The Server is assigned the Node ID 0.
+Each device on the bus has its own unique Node ID. Node IDs are 5 bits wide, giving a range of 0--31.
 The CAN ID is composed of 11 bits. It contains the sender and receiver Node IDs and a priority bit.
 
 \paragraph{}
@@ -22,4 +22,18 @@ Priority & 1 & Message priority (0=low, 1=high) \\
 
 \end{center}
 
-% TODO: Describe ID allocation strategy and priority rules
+\subsection{Reserved Node IDs}\label{sec:reserved-node-ids}
+Certain Node ID values carry special meaning and must not be assigned to regular client nodes:
+
+\begin{center}
+\begin{tabular}{c l p{8cm}}
+\toprule
+\textbf{Node ID} & \textbf{Name} & \textbf{Description} \\
+\midrule
+0  & Invalid   & Reserved as an invalid/unassigned address. No node may use this ID. \\
+1  & Server    & The central server node. \\
+31 & Broadcast & Broadcast address. Messages sent with this receiver ID are received by all nodes on the bus. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
