@@ -71,6 +71,7 @@ a human-readable name. The name and field ID have to be unique per node. The fir
 \paragraph{}
 Next, the node sends \texttt{telemetry\_group\_definition} messages.
 The node sends a group ID to identify the group and a list of field IDs. 
+Every telemetry value has to be a member of exactly one telemetry group.
 The order of the field IDs must be the same as the order of fields in future \texttt{telemetry\_group\_updates}. The node must ensure that the values of all of the defined telemetryValues can fit into a TelemetryGroupUpdate.
 
 
