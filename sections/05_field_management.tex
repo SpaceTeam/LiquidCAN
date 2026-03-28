@@ -66,7 +66,7 @@ TelemetryValues and parameters are dynamically defined over the bus.
 \paragraph{}
 After registration was initialized, a node sends out \texttt{field\_registration} messages, one for each 
 parameter/telemetryValue. The FieldRegistration includes a field ID, the datatype of the field, and 
-a human-readable name. The name and field ID have to be unique per node. The first bit of paramter field IDs is 0 and the first bit of telemetryValue field IDs is 1. From this point on, the server knows which fields the node has. The fieldID \texttt{0} is reserved to indicate an invalid fieldID. It must not be assigned to a field. FieldIDs must be assigned in a determenistic way. This ensures that named fields have the same fieldID between reboots.
+a human-readable name. The name and field ID have to be unique per node. The most significant bit of paramter field IDs is 0 and the most significant bit of telemetryValue field IDs is 1. From this point on, the server knows which fields the node has. The fieldID \texttt{0} is reserved to indicate an invalid fieldID. It must not be assigned to a field. FieldIDs must be assigned in a determenistic way. This ensures that named fields have the same fieldID between reboots.
 
 \paragraph{}
 Next, the node sends \texttt{telemetry\_group\_definition} messages.
