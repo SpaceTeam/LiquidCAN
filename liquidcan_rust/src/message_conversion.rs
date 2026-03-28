@@ -2,18 +2,26 @@ use crate::can_message::CanMessage;
 use liquidcan_rust_macros::byte_codec::ByteCodec;
 use socketcan::EmbeddedFrame;
 
-impl TryFrom<socketcan::CanFdFrame> for CanMessage {
+impl TryFrom<&socketcan::CanFdFrame> for CanMessage {
     type Error = anyhow::Error;
 
-    fn try_from(frame: socketcan::CanFdFrame) -> Result<Self, Self::Error> {
+    fn try_from(frame: &socketcan::CanFdFrame) -> Result<Self, Self::Error> {
         let frame_data = frame.data();
         let (message, _) = CanMessage::deserialize(frame_data)?;
         Ok(message)
     }
 }
 
-impl From<CanMessage> for socketcan::CanFdFrame {
-    fn from(msg: CanMessage) -> Self {
+impl TryFrom<socketcan::CanFdFrame> for CanMessage {
+    type Error = anyhow::Error;
+
+    fn try_from(frame: socketcan::CanFdFrame) -> Result<Self, Self::Error> {
+        CanMessage::try_from(&frame)
+    }
+}
+
+impl From<&CanMessage> for socketcan::CanFdFrame {
+    fn from(msg: &CanMessage) -> Self {
         let mut buf = Vec::with_capacity(64);
         msg.serialize(&mut buf);
 
@@ -21,6 +29,12 @@ impl From<CanMessage> for socketcan::CanFdFrame {
         let id = socketcan::StandardId::ZERO;
 
         socketcan::CanFdFrame::new(id, &buf).unwrap()
+    }
+}
+
+impl From<CanMessage> for socketcan::CanFdFrame {
+    fn from(msg: CanMessage) -> Self {
+        Self::from(&msg)
     }
 }
 
@@ -32,7 +46,7 @@ mod tests {
     use socketcan::EmbeddedFrame;
 
     fn test_round_trip(msg: CanMessage) {
-        let can_data: socketcan::CanFdFrame = msg.clone().into();
+        let can_data: socketcan::CanFdFrame = (&msg).into();
         let msg_back: CanMessage = can_data
             .try_into()
             .expect("Failed to convert back to Command");
@@ -47,7 +61,7 @@ mod tests {
 
         // For payloads where type metadata is absent, decode is intentionally lossy.
         // Assert canonical wire round-tripping instead of strict AST equality.
-        let can_data_back: socketcan::CanFdFrame = msg_back.clone().into();
+        let can_data_back: socketcan::CanFdFrame = (&msg_back).into();
         assert_eq!(
             can_data.data(),
             can_data_back.data(),
